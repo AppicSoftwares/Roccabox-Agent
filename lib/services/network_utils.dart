@@ -9,8 +9,8 @@ class NetworkUtil {
 
   final JsonDecoder _decoder = new JsonDecoder();
 
-  Future<dynamic> get(String url, {Map headers}) {
-    return http.get(Uri.parse(url), headers: headers,).then((http.Response response) {
+  Future<dynamic> get(String url, {Map<String ,String>? headers}) {
+    return http.get(Uri.parse(url), headers: headers).then((http.Response response) {
       final String res = response.body;
       final int statusCode = response.statusCode;
     print("Response" +res.toString());
@@ -20,7 +20,7 @@ class NetworkUtil {
       return _decoder.convert(res);
     });
   }
-  Future<dynamic> delete(String url, {Map headers}) {
+  Future<dynamic> delete(String url, {Map<String ,String>? headers}) {
     return http.delete(Uri.parse(url), headers: headers,).then((http.Response response) {
       final String res = response.body;
       final int statusCode = response.statusCode;
@@ -31,7 +31,7 @@ class NetworkUtil {
       return _decoder.convert(res);
     });
   }
-  Future<dynamic> post(String url, {Map headers, body, encoding}) {
+  Future<dynamic> post(String url, {Map<String ,String>? headers, body, encoding}) {
     return http
         .post(Uri.parse(url), body: body, headers: headers, encoding: encoding)
         .then((http.Response response) {
