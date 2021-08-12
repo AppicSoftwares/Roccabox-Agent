@@ -5,14 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:roccabox_agent/services/APIClient.dart';
-
+/*
 Future<dynamic> uploadImage(
     File image,
     String firstName,
     String lastName,
     String restroName,
     String restroAddress,
-    String token,
+String token,
     String mobile) async {
   var request = http.MultipartRequest(
     "POST",
@@ -109,4 +109,4 @@ Future<dynamic> uploadImage(
           fontSize: 16.0);
     });
   }
-}
+}*/

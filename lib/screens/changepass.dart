@@ -43,9 +43,8 @@ class _ChangePassState extends State<ChangePass> {
               margin: EdgeInsets.symmetric(horizontal: 10),
               child: TextField(
                 decoration: InputDecoration(
-                    label: Text(
-                      'New Password',
-                    ),
+                    labelText:'New Password',
+
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide(color: Color(0xffD2D2D2))),
@@ -57,9 +56,8 @@ class _ChangePassState extends State<ChangePass> {
               margin: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
               child: TextField(
                 decoration: InputDecoration(
-                    label: Text(
-                      'Confirm Password',
-                    ),
+                    labelText: 'Confirm Password',
+
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide(color: Color(0xffD2D2D2))),

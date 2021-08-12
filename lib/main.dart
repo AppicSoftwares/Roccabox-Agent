@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'screens/splash.dart';
 
@@ -7,11 +8,12 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Flutter Demo',
+        title: 'Roccabox',
         theme: ThemeData(
           // This is the theme of your application.
           //
@@ -26,4 +28,6 @@ class MyApp extends StatelessWidget {
         ),
         home: Splash());
   }
+
+
 }

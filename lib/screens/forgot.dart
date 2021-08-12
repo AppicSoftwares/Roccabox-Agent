@@ -68,9 +68,8 @@ class _ForgotState extends State<Forgot> {
                     return null;
                   },
                   decoration: InputDecoration(
-                      label: Text(
-                        'Email Id',
-                      ),
+                      labelText:'Email Id',
+
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide(color: Color(0xffD2D2D2))),
