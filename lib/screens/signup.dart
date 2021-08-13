@@ -19,6 +19,7 @@ class Signup extends StatefulWidget {
 
 class _SignupState extends State<Signup> {
   final formkey = GlobalKey<FormState>();
+  String? name;
   String? email;
   String? password;
   bool obscure = true;
@@ -63,7 +64,34 @@ class _SignupState extends State<Signup> {
                 child: Column(
                   children: [
                     Container(
-                      margin: EdgeInsets.symmetric(horizontal: 10),
+                      margin: EdgeInsets.fromLTRB(10, 10, 10, 0),
+                      child: TextFormField(
+                        showCursor: true,
+                        inputFormatters: [
+                          WhitelistingTextInputFormatter(RegExp(r"[a-zA-Z]+|\s")),
+                        ],
+                        keyboardType: TextInputType.name,
+                        validator: (val) {
+                          if (val == null || val.isEmpty) {
+                            return 'Please Enter your Name';
+                          }
+                          return null;
+                        },
+                        onChanged: (val) {
+                          name = val;
+                        },
+                        decoration: InputDecoration(
+                            labelText: 'Name',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide(color: Color(0xffD2D2D2))
+                            ),
+                            labelStyle: TextStyle(
+                                fontSize: 15, color: Color(0xff000000))),
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.fromLTRB(10, 20, 10, 0),
                       child: TextFormField(
                         showCursor: true,
                         inputFormatters: [
@@ -166,7 +194,7 @@ class _SignupState extends State<Signup> {
                           isLoading = true;
 
                         });
-                        postApi(email.toString(), password.toString(), phone.toString());
+                        postApi(name.toString(),email.toString(), password.toString(), phone.toString());
 
 
                     }
@@ -222,8 +250,9 @@ class _SignupState extends State<Signup> {
 
 
 
-  Future<dynamic> postApi(
+  Future<dynamic> postApi( String name,
   String email, String password, String phone) async {
+    print("name: " + email.toString().trim() + "_");
     print("email: " + email.toString().trim() + "_");
     print("password: " + password.toString().trim() + "_");
     print("phone: " + phone.toString().trim() + "_");
@@ -236,6 +265,7 @@ class _SignupState extends State<Signup> {
           RestDatasource.SIGNUP_URL ,
         ),
         body:{
+          "name":name.toString().trim(),
           "email":email.toString().trim(),
           "password":password.toString().trim(),
           "phone":phone.toString().trim(),
@@ -270,10 +300,11 @@ class _SignupState extends State<Signup> {
 
     if(res!=null) {
       if (res.statusCode == 200) {
-        if (jsonRes["status"] == 200) {
+        if (jsonRes["status"] == true) {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setString('id', jsonRes["data"]["id"].toString());
           prefs.setString('email', jsonRes["data"]["email"].toString());
+          prefs.setString('name', jsonRes["data"]["name"].toString());
           prefs.commit();
 
           ScaffoldMessenger.of(context).showSnackBar(
