@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:roccabox_agent/screens/forgot.dart';
-import 'package:roccabox_agent/screens/home.dart';
+import 'package:roccabox_agent/screens/homenav.dart';
 import 'package:roccabox_agent/screens/signup.dart';
 import 'package:http/http.dart' as http;
 import 'package:roccabox_agent/services/APIClient.dart';
@@ -23,7 +23,7 @@ class _LoginState extends State<Login> {
   String? email;
   String? pass;
   bool isLoading = false;
-
+  String? name;
 
   @override
   void initState() {
@@ -38,31 +38,50 @@ class _LoginState extends State<Login> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Container(
+              //   margin: EdgeInsets.only(top: 60, left: 10, bottom: 70),
+              //   height: 53,
+              //   width: 145,
+              //   child: SvgPicture.asset('assets/roccabox-logo.svg'),
+              // ),
               Container(
-                margin: EdgeInsets.only(top: 60, left: 10, bottom: 70),
+                margin: EdgeInsets.only(
+                    top: MediaQuery.of(context).size.height * .07,
+                    bottom: MediaQuery.of(context).size.height * .05,
+                    left: 10),
                 height: 53,
                 width: 145,
                 child: SvgPicture.asset('assets/roccabox-logo.svg'),
               ),
+              // Container(
+              //   margin: EdgeInsets.only(left: 10),
+              //   child: Text('Agent,',
+              //       style: TextStyle(
+              //           fontSize: 26,
+              //           fontFamily: 'Poppins',
+              //           fontWeight: FontWeight.bold,
+              //           color: Color(0xff000000))),
+              // ),
               Container(
-                margin: EdgeInsets.only(left: 10),
-                child: Text('Agent,',
-                    style: TextStyle(
-                        fontSize: 26,
-                        fontFamily: 'Poppins',
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xff000000))),
-              ),
-              Container(
-                margin: EdgeInsets.only(left: 10, bottom: 60),
-                child: Text('Sign in to connect!',
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.w300,
-                      fontSize: 22,
-                      color: Color(0xff8A8787),
-                    )),
-              ),
+                  margin: EdgeInsets.only(left: 10, bottom: 30),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Agent,',
+                          style: TextStyle(
+                              fontSize: 26,
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xff000000))),
+                      Text('Sign In to connect!',
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontWeight: FontWeight.w300,
+                            fontSize: 22,
+                            color: Color(0xff8A8787),
+                          ))
+                    ],
+                  )),
               Form(
                   key: formkey,
                   child: Column(
@@ -83,13 +102,12 @@ class _LoginState extends State<Login> {
                               return 'Please Enter your Email';
                             }
                             if (!EmailValidator.validate(email.toString())) {
-                            return 'Please Enter Valid Email Id';
+                              return 'Please Enter Valid Email Id';
                             }
                             return null;
                           },
                           decoration: InputDecoration(
                               labelText: 'Email Id',
-
                               border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                   borderSide:
@@ -133,8 +151,7 @@ class _LoginState extends State<Login> {
                                       obscure = !obscure;
                                     });
                                   }),
-                              labelText:'Password',
-
+                              labelText: 'Password',
                               border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                   borderSide:
@@ -145,35 +162,41 @@ class _LoginState extends State<Login> {
                       ),
                     ],
                   )),
-             isLoading==true?Center(child: CircularProgressIndicator(),): GestureDetector(
-                onTap: () {
-                  if (formkey.currentState!.validate()) {
-                    if (EmailValidator.validate(email.toString())) {
-                      setState(() {
-                        isLoading = true;
-
-                      });
-                      postApi(email.toString(), pass.toString());
-
-                    }else{
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please enter a valid email')));
-                    }
-                  }
-                },
-                child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-                  height: 55,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Color(0xffFFBA00)),
-                  child: Center(
-                      child: Text(
-                    'Login',
-                    style: TextStyle(fontSize: 15, color: Color(0xff000000)),
-                  )),
-                ),
-              ),
+              isLoading == true
+                  ? Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : GestureDetector(
+                      onTap: () {
+                        if (formkey.currentState!.validate()) {
+                          if (EmailValidator.validate(email.toString())) {
+                            setState(() {
+                              isLoading = true;
+                            });
+                            postApi(email.toString(), pass.toString());
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content:
+                                        Text('Please enter a valid email')));
+                          }
+                        }
+                      },
+                      child: Container(
+                        margin:
+                            EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                        height: 55,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            color: Color(0xffFFBA00)),
+                        child: Center(
+                            child: Text(
+                          'Login',
+                          style:
+                              TextStyle(fontSize: 15, color: Color(0xff000000)),
+                        )),
+                      ),
+                    ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 15),
                 child: Row(
@@ -185,8 +208,10 @@ class _LoginState extends State<Login> {
                     ),
                     TextButton(
                         onPressed: () {
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (context) => Signup()));
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => Signup()));
                         },
                         child: Text('Sign up',
                             style: TextStyle(
@@ -214,31 +239,22 @@ class _LoginState extends State<Login> {
     );
   }
 
-
-
-  Future<dynamic> postApi(
-
-
-      String email,
-      String password) async {
+  Future<dynamic> postApi(String email, String password) async {
     print("email: " + email.toString().trim() + "_");
     print("password: " + password.toString().trim() + "_");
-    print("role_id: " +  "2");
+    print("role_id: " + "2");
     var jsonRes;
     late http.Response res;
     String msg = "";
     var request = http.post(
-      Uri.parse(
-        RestDatasource.LOGIN_URL ,
-      ),
-      body:{
-        "email":email.toString().trim(),
-        "password":password.toString().trim(),
-        "role_id":"2"
-      }
-    );
-
-
+        Uri.parse(
+          RestDatasource.LOGIN_URL,
+        ),
+        body: {
+          "email": email.toString().trim(),
+          "password": password.toString().trim(),
+          "role_id": "2"
+        });
 
 /*    Map<String, String> headers = {
       'Content-Type': 'multipart/form-data',
@@ -250,8 +266,8 @@ class _LoginState extends State<Login> {
           File(file.path).readAsBytes().asStream(), File(file.path).lengthSync(),
           filename: fileName));
     }*/
-      await request.then((http.Response response){
-        res = response;
+    await request.then((http.Response response) {
+      res = response;
       final JsonDecoder _decoder = new JsonDecoder();
       jsonRes = _decoder.convert(response.body.toString());
       print("Response: " + response.body.toString() + "_");
@@ -260,38 +276,35 @@ class _LoginState extends State<Login> {
       print("message: " + jsonRes["message"].toString() + "_");
       msg = jsonRes["message"].toString();
     });
-   // var respone = await res.stream.bytesToString();
+    // var respone = await res.stream.bytesToString();
 
-
-    if(res!=null) {
+    if (res != null) {
       if (res.statusCode == 200) {
         if (jsonRes["status"] == 200) {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setString('id', jsonRes["data"]["id"].toString());
           prefs.setString('email', jsonRes["data"]["email"].toString());
           prefs.commit();
-          ScaffoldMessenger.of(context).showSnackBar(
-               SnackBar(content: Text(msg)));
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(msg)));
           setState(() {
             isLoading = false;
           });
           Navigator.pushAndRemoveUntil(context,
-              MaterialPageRoute(builder: (context) => HomePage()), (r)=>false);
+              MaterialPageRoute(builder: (context) => HomeNav()), (r) => false);
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(msg)));
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(msg)));
           setState(() {
             isLoading = false;
-
           });
         }
       } else {
-
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error while fetching data')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error while fetching data')));
         setState(() {
           isLoading = false;
-         /* Fluttertoast.showToast(
+          /* Fluttertoast.showToast(
               msg: "Exception: " + jsonRes["message"].toString(),
               toastLength: Toast.LENGTH_SHORT,
               gravity: ToastGravity.CENTER,
@@ -301,7 +314,7 @@ class _LoginState extends State<Login> {
               fontSize: 16.0);*/
         });
       }
-    }else{
+    } else {
       setState(() {
         isLoading = false;
       });
