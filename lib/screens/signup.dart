@@ -22,6 +22,7 @@ class Signup extends StatefulWidget {
 
 class _SignupState extends State<Signup> {
   final formkey = GlobalKey<FormState>();
+  String? name;
   String? email;
   String? password;
   bool obscure = true;
@@ -67,6 +68,7 @@ class _SignupState extends State<Signup> {
                 child: Column(
                   children: [
                     Container(
+<<<<<<< HEAD
                       margin: EdgeInsets.fromLTRB(10, 0, 10, 20),
                       child: TextFormField(
                         validator: (val) {
@@ -126,12 +128,40 @@ class _SignupState extends State<Signup> {
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide:
                                     BorderSide(color: Color(0xffD2D2D2))),
+=======
+                      margin: EdgeInsets.fromLTRB(10, 10, 10, 0),
+                      child: TextFormField(
+                        showCursor: true,
+                        inputFormatters: [
+                          WhitelistingTextInputFormatter(RegExp(r"[a-zA-Z]+|\s")),
+                        ],
+                        keyboardType: TextInputType.name,
+                        validator: (val) {
+                          if (val == null || val.isEmpty) {
+                            return 'Please Enter your Name';
+                          }
+                          return null;
+                        },
+                        onChanged: (val) {
+                          name = val;
+                        },
+                        decoration: InputDecoration(
+                            labelText: 'Name',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide(color: Color(0xffD2D2D2))
+                            ),
+>>>>>>> 4472561cc9a75b5e123d235ac0039c845954bd87
                             labelStyle: TextStyle(
                                 fontSize: 15, color: Color(0xff000000))),
                       ),
                     ),
                     Container(
+<<<<<<< HEAD
                       margin: EdgeInsets.symmetric(horizontal: 10),
+=======
+                      margin: EdgeInsets.fromLTRB(10, 20, 10, 0),
+>>>>>>> 4472561cc9a75b5e123d235ac0039c845954bd87
                       child: TextFormField(
                         showCursor: true,
                         inputFormatters: [
@@ -244,6 +274,7 @@ class _SignupState extends State<Signup> {
                   ],
                 ),
               ),
+<<<<<<< HEAD
               isLoading == true
                   ? Center(
                       child: CircularProgressIndicator(),
@@ -280,6 +311,35 @@ class _SignupState extends State<Signup> {
                         )),
                       ),
                     ),
+=======
+              isLoading==true?Center(child: CircularProgressIndicator(),):  GestureDetector(
+                onTap: () {
+                  if (formkey.currentState!.validate()) {
+                    if (EmailValidator.validate(email.toString())) {
+                        setState(() {
+                          isLoading = true;
+
+                        });
+                        postApi(name.toString(),email.toString(), password.toString(), phone.toString());
+
+
+                    }
+                  }
+                },
+                child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                  height: 55,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: Color(0xffFFBA00)),
+                  child: Center(
+                      child: Text(
+                    'Sign Up',
+                    style: TextStyle(fontSize: 15, color: Color(0xff000000)),
+                  )),
+                ),
+              ),
+>>>>>>> 4472561cc9a75b5e123d235ac0039c845954bd87
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 15),
                 child: Row(
@@ -314,8 +374,17 @@ class _SignupState extends State<Signup> {
     );
   }
 
+<<<<<<< HEAD
   Future<dynamic> postApi(
       String email, String password, String phone, String name) async {
+=======
+
+
+
+  Future<dynamic> postApi( String name,
+  String email, String password, String phone) async {
+    print("name: " + email.toString().trim() + "_");
+>>>>>>> 4472561cc9a75b5e123d235ac0039c845954bd87
     print("email: " + email.toString().trim() + "_");
     print("password: " + password.toString().trim() + "_");
     print("phone: " + phone.toString().trim() + "_");
@@ -327,6 +396,7 @@ class _SignupState extends State<Signup> {
         Uri.parse(
           RestDatasource.SIGNUP_URL,
         ),
+<<<<<<< HEAD
         body: {
           "email": email.toString().trim(),
           "password": password.toString().trim(),
@@ -334,6 +404,18 @@ class _SignupState extends State<Signup> {
           "role_id": "2",
           'name': name.toString()
         });
+=======
+        body:{
+          "name":name.toString().trim(),
+          "email":email.toString().trim(),
+          "password":password.toString().trim(),
+          "phone":phone.toString().trim(),
+          "role_id":"2"
+        }
+    );
+
+
+>>>>>>> 4472561cc9a75b5e123d235ac0039c845954bd87
 
 /*    Map<String, String> headers = {
       'Content-Type': 'multipart/form-data',
@@ -365,8 +447,35 @@ class _SignupState extends State<Signup> {
           isLoading = false;
         });
 
+<<<<<<< HEAD
         // Navigator.pushAndRemoveUntil(context,
         //     MaterialPageRoute(builder: (context) => HomePage()), (r) => false);
+=======
+    if(res!=null) {
+      if (res.statusCode == 200) {
+        if (jsonRes["status"] == true) {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          prefs.setString('id', jsonRes["data"]["id"].toString());
+          prefs.setString('email', jsonRes["data"]["email"].toString());
+          prefs.setString('name', jsonRes["data"]["name"].toString());
+          prefs.commit();
+
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(msg)));
+          setState(() {
+            isLoading = false;
+          });
+          Navigator.pushAndRemoveUntil(context,
+              MaterialPageRoute(builder: (context) => HomePage()), (r)=>false);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(msg)));
+          setState(() {
+            isLoading = false;
+
+          });
+        }
+>>>>>>> 4472561cc9a75b5e123d235ac0039c845954bd87
       } else {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         print('done');
