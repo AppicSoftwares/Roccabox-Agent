@@ -280,7 +280,7 @@ class _LoginState extends State<Login> {
 
     if (res != null) {
       if (res.statusCode == 200) {
-        if (jsonRes["status"] == 200) {
+        if (jsonRes["status"] == true) {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setString('id', jsonRes["data"]["id"].toString());
           prefs.setString('email', jsonRes["data"]["email"].toString());

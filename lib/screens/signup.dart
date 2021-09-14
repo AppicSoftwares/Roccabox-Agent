@@ -88,9 +88,7 @@ class _SignupState extends State<Signup> {
                         },
                         keyboardType: TextInputType.name,
                         decoration: InputDecoration(
-                            label: Text(
-                              'First Name',
-                            ),
+                            labelText: 'First Name',
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide:
@@ -120,9 +118,7 @@ class _SignupState extends State<Signup> {
                         },
                         keyboardType: TextInputType.name,
                         decoration: InputDecoration(
-                            label: Text(
-                              'Last Name',
-                            ),
+                            labelText: 'Last Name',
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide:
@@ -183,8 +179,8 @@ class _SignupState extends State<Signup> {
                               // showFlag: false,
                               onChanged: print,
                               // Initial selection and favorite can be one of code ('IT') OR dial_code('+39')
-                              initialSelection: 'IN',
-                              favorite: ['+91', 'FR'],
+                              initialSelection: 'gb',
+                              // favorite: ['+91', 'FR'],
                               // optional. Shows only country name and flag
                               showCountryOnly: false,
                               // optional. Shows only country name and flag when popup is closed.
@@ -302,10 +298,13 @@ class _SignupState extends State<Signup> {
                 ),
               ),
               Center(
-                child: Text(
-                  'Need to wait for Admin’s Approval',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, color: Color(0xff000000)),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 20.0),
+                  child: Text(
+                    'Need to wait for Admin’s Approval',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16, color: Color(0xff000000)),
+                  ),
                 ),
               )
             ],
@@ -360,7 +359,7 @@ class _SignupState extends State<Signup> {
     // var respone = await res.stream.bytesToString();
 
     if (res.statusCode == 200) {
-      if (jsonRes["status"] == 200) {
+      if (jsonRes["status"] != true) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(msg)));
         setState(() {
@@ -379,8 +378,8 @@ class _SignupState extends State<Signup> {
             context,
             MaterialPageRoute(builder: (context) => HomeNav()),
             (route) => false);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('home')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(jsonRes["message"].toString())));
         setState(() {
           isLoading = false;
         });

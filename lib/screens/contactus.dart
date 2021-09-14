@@ -46,9 +46,7 @@ class _ContactState extends State<Contact> {
                 padding: const EdgeInsets.only(top: 10.0, bottom: 20),
                 child: TextField(
                   decoration: InputDecoration(
-                      label: Text(
-                        'Name',
-                      ),
+                      labelText: 'Name',
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10))),
                 ),
@@ -68,9 +66,7 @@ class _ContactState extends State<Contact> {
                 padding: const EdgeInsets.only(top: 10.0, bottom: 20),
                 child: TextField(
                   decoration: InputDecoration(
-                      label: Text(
-                        'test@gmail.com',
-                      ),
+                      labelText: 'test@gmail.com',
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10))),
                 ),
@@ -94,8 +90,8 @@ class _ContactState extends State<Contact> {
                         // showFlag: false,
                         onChanged: print,
                         // Initial selection and favorite can be one of code ('IT') OR dial_code('+39')
-                        initialSelection: 'IN',
-                        favorite: ['+91', 'FR'],
+                        initialSelection: 'gb',
+                        // favorite: ['+91', 'FR'],
                         // optional. Shows only country name and flag
                         showCountryOnly: false,
                         // optional. Shows only country name and flag when popup is closed.
@@ -103,9 +99,7 @@ class _ContactState extends State<Contact> {
                         // optional. aligns the flag and the Text left
                         alignLeft: false,
                       ),
-                      label: Text(
-                        '9876543210',
-                      ),
+                      labelText: '9876543210',
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10))),
                 ),
