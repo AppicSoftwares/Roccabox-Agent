@@ -43,6 +43,7 @@ class _NotificationsState extends State<Notifications> {
         itemCount: names.length,
         separatorBuilder: (BuildContext context, int index) {
           return Divider(
+            height: 0,
             color: Color(0xff707070),
           );
         },
