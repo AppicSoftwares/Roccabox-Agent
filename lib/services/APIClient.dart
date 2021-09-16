@@ -8,4 +8,5 @@ class RestDatasource {
   static final BASE_URL = "https://facebook.roccabox.com/blog/api/";
   static final SIGNUP_URL = BASE_URL + "signUp";
   static final LOGIN_URL = BASE_URL + "Login";
+  static final GETASSIGNEDUSER_URL = BASE_URL + "getAssignedUser?user_id=";
 }
