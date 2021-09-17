@@ -4,19 +4,21 @@ import 'package:roccabox_agent/screens/user_Detail.dart';
 
 import 'Setting.dart';
 
-class TotalUserScreen extends StatefulWidget {
+class AssignedUsersScreen extends StatefulWidget {
 List<TotalUserList> totalUserList = [];
 
-TotalUserScreen({Key? key,  required this.totalUserList})
+AssignedUsersScreen({Key? key,  required this.totalUserList})
       : super(key: key);
 
 
 
   @override
-  State<TotalUserScreen> createState() => _TotalUserScreenState();
+  State<AssignedUsersScreen> createState() => _TotalUserScreenState();
 }
 
-class _TotalUserScreenState extends State<TotalUserScreen> {
+class _TotalUserScreenState extends State<AssignedUsersScreen> {
+
+  bool isloading = false;
     
   @override
   Widget build(BuildContext context) {
@@ -27,7 +29,7 @@ class _TotalUserScreenState extends State<TotalUserScreen> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Chat',
+          'Assigned Users',
           style: TextStyle(
               fontSize: 16,
               color: Color(0xff000000),
@@ -45,6 +47,7 @@ class _TotalUserScreenState extends State<TotalUserScreen> {
           return ListTile(
             onTap: () => Navigator.push(
                 context, MaterialPageRoute(builder: (context) => UserDetails(
+                  P_Agency_FilterId: "1",
                   totalUserList: widget.totalUserList[index],
                 ))),
             leading: CircleAvatar(

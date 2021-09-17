@@ -40,7 +40,8 @@ class _HomeNavState extends State<HomeNav> {
                   'assets/chat.svg',
                   color: _index == 0 ? Color(0xffFFBA00) : Color(0xff8E8E8E),
                 ),
-                label: 'Chat'),
+                label: 'Chat',
+                ),
             BottomNavigationBarItem(
                 icon: SvgPicture.asset(
                   'assets/call.svg',

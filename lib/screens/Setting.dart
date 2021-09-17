@@ -1,10 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:roccabox_agent/screens/change_Password.dart';
+import 'package:roccabox_agent/screens/edit_profile.dart';
 import 'package:roccabox_agent/screens/login.dart';
 import 'package:roccabox_agent/screens/privacy.dart';
 import 'package:roccabox_agent/screens/terms.dart';
-import 'package:roccabox_agent/screens/total_user_screen.dart';
+import 'package:roccabox_agent/screens/assigned_users.dart';
 import 'package:roccabox_agent/services/APIClient.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'aboutUs.dart';
@@ -18,15 +20,13 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-
   List data = [];
   List<TotalUserList> totalUserList = [];
-  var count ="";
+  var count = "";
 
   bool isLoading = false;
 
-
-@override
+  @override
   void initState() {
     super.initState();
     getUserList();
@@ -65,8 +65,8 @@ class _ProfileState extends State<Profile> {
               subtitle: Text('test@gmail.com'),
               trailing: TextButton(
                   onPressed: () {
-                    // Navigator.push(context,
-                    //     MaterialPageRoute(builder: (context) => EditProfile()));
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => EditProfile()));
                   },
                   child: Text(
                     'Edit Profile',
@@ -88,82 +88,30 @@ class _ProfileState extends State<Profile> {
               ),
             ),
             ListTile(
-              // onTap: () => Navigator.push(context,
-              //     MaterialPageRoute(builder: (context) => PropertyList())),
-              //tileColor: Color(0xffF3F3F3),
-              title: Text(
-                'Total User',
-                style: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xff000000),
-                    fontWeight: FontWeight.w500),
-              ),
-              trailing: Text(
-               count,
-                style: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xff000000),
-                    fontWeight: FontWeight.w500),
-              ),
-
-              onTap:() { 
-                Navigator.push(context, MaterialPageRoute(builder: (context) => TotalUserScreen(
-                  totalUserList: totalUserList
-                )));
-              }
-
-            ),
-            ListTile(
-              tileColor: Color(0xffF3F3F3),
-              title: Text(
-                'Settings',
-                style: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xff000000),
-                    fontWeight: FontWeight.w600),
-              ),
-            ),
-            ListTile(
-                onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => Language()));
-                },
+                // onTap: () => Navigator.push(context,
+                //     MaterialPageRoute(builder: (context) => PropertyList())),
                 //tileColor: Color(0xffF3F3F3),
                 title: Text(
-                  'Language(English)',
+                  'Total User',
                   style: TextStyle(
                       fontSize: 16,
                       color: Color(0xff000000),
                       fontWeight: FontWeight.w500),
                 ),
-                trailing: Icon(
-                  Icons.arrow_forward_ios,
-                  size: 20,
-                )),
-            Divider(
-              color: Color(0xff707070),
-            ),
-            ListTile(
-              //tileColor: Color(0xffF3F3F3),
-              title: Text(
-                'Logout',
-                style: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xff000000),
-                    fontWeight: FontWeight.w500),
-              ),
-              onTap: () async{
-
-                var pref = await SharedPreferences.getInstance();
-          
-                pref.clear();
-                pref.commit();
-                Navigator.pushAndRemoveUntil(context, 
-                new MaterialPageRoute(builder: (context) => Login()), 
-                (route) => false);
-
-              },
-            ),
+                trailing: Text(
+                  count,
+                  style: TextStyle(
+                      fontSize: 16,
+                      color: Color(0xff000000),
+                      fontWeight: FontWeight.w500),
+                ),
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              AssignedUsersScreen(totalUserList: totalUserList)));
+                }),
             ListTile(
               tileColor: Color(0xffF3F3F3),
               title: Text(
@@ -244,44 +192,110 @@ class _ProfileState extends State<Profile> {
                   Icons.arrow_forward_ios,
                   size: 20,
                 )),
+            ListTile(
+              tileColor: Color(0xffF3F3F3),
+              title: Text(
+                'Settings',
+                style: TextStyle(
+                    fontSize: 16,
+                    color: Color(0xff000000),
+                    fontWeight: FontWeight.w600),
+              ),
+            ),
+            ListTile(
+                onTap: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => Language()));
+                },
+                //tileColor: Color(0xffF3F3F3),
+                title: Text(
+                  'Language(English)',
+                  style: TextStyle(
+                      fontSize: 16,
+                      color: Color(0xff000000),
+                      fontWeight: FontWeight.w500),
+                ),
+                trailing: Icon(
+                  Icons.arrow_forward_ios,
+                  size: 20,
+                )),
+            Divider(
+              color: Color(0xff707070),
+            ),
+            ListTile(
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ChangePaasword()));
+                },
+                //tileColor: Color(0xffF3F3F3),
+                title: Text(
+                  'Change Password',
+                  style: TextStyle(
+                      fontSize: 16,
+                      color: Color(0xff000000),
+                      fontWeight: FontWeight.w500),
+                ),
+                trailing: Icon(
+                  Icons.arrow_forward_ios,
+                  size: 20,
+                )),
+            Divider(
+              color: Color(0xff707070),
+            ),
+            ListTile(
+              //tileColor: Color(0xffF3F3F3),
+              title: Text(
+                'Logout',
+                style: TextStyle(
+                    fontSize: 16,
+                    color: Color(0xff000000),
+                    fontWeight: FontWeight.w500),
+              ),
+              onTap: () async {
+                var pref = await SharedPreferences.getInstance();
+
+                pref.clear();
+                pref.commit();
+                Navigator.pushAndRemoveUntil(
+                    context,
+                    new MaterialPageRoute(builder: (context) => Login()),
+                    (route) => false);
+              },
+            ),
           ],
         ),
       ),
     );
   }
 
- Future<dynamic> getUserList() async{
+  Future<dynamic> getUserList() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    var id = pref.getString("id").toString();
+    var request = http.get(Uri.parse(
+      RestDatasource.GETASSIGNEDUSER_URL + "41",
+    ));
 
-   SharedPreferences pref = await SharedPreferences.getInstance();
-   var id = pref.getString("id").toString();
-   var request = http.get(
-     Uri.parse(RestDatasource.GETASSIGNEDUSER_URL+ "41",)
+    var jsonRes;
+    var jsonArray;
+    var res;
 
-   );
+    await request.then((http.Response response) {
+      res = response;
+      final JsonDecoder _decoder = new JsonDecoder();
+      jsonRes = _decoder.convert(response.body.toString());
+      print("Ress" + jsonRes.toString() + "");
+    });
 
-   var jsonRes;
-   var jsonArray;
-   var res;
-
-   await request.then ((http.Response response) {
-     res = response;
-     final JsonDecoder _decoder = new JsonDecoder();
-     jsonRes = _decoder.convert(response.body.toString());
-     print("Ress" + jsonRes.toString() + "");
-   }
-
-
-   );
-
-
-     if (res.statusCode == 200) {
+    if (res.statusCode == 200) {
       print("Response: " + jsonRes.toString() + "_");
-   
-     if (jsonRes["status"].toString() == "true") {
-       totalUserList.clear();
-       count =  jsonRes["count"].toString();
-       print("count:" + count + "");
-       jsonArray = jsonRes["data"];
+
+      if (jsonRes["status"].toString() == "true") {
+        totalUserList.clear();
+        count = jsonRes["count"].toString();
+        print("count:" + count + "");
+        jsonArray = jsonRes["data"];
 
         if (jsonArray != null) {
           if (jsonArray.length > 0) {
@@ -293,9 +307,10 @@ class _ProfileState extends State<Profile> {
               modelSearch.phone = jsonArray[i]["phone"].toString();
               modelSearch.enqID = jsonArray[i]["enqID"].toString();
               modelSearch.enqID = jsonArray[i]["enqID"].toString();
-              modelSearch.property_Rid = jsonArray[i]["property_Rid"].toString();
+              modelSearch.property_Rid =
+                  jsonArray[i]["property_Rid"].toString();
               modelSearch.message = jsonArray[i]["message"].toString();
-              
+
               totalUserList.add(modelSearch);
             }
           }
@@ -332,8 +347,8 @@ class _ProfileState extends State<Profile> {
     } else {
       setState(() {
         isLoading = false;
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Please try leter")));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Please try leter")));
         // Fluttertoast.showToast(
         //     msg: "Exception: " + jsonRes["message"].toString(),
         //     toastLength: Toast.LENGTH_SHORT,
@@ -344,22 +359,15 @@ class _ProfileState extends State<Profile> {
         //     fontSize: 16.0);
       });
     }
-
-
-
- }
-
-
+  }
 }
- class TotalUserList{
-   String name = "";
-   String email = "";
-   String phone = "";
-   String userId = "";
-   String enqID = "";
-   String property_Rid = "";
-   String message = "";
-   
 
-
- }
+class TotalUserList {
+  String name = "";
+  String email = "";
+  String phone = "";
+  String userId = "";
+  String enqID = "";
+  String property_Rid = "";
+  String message = "";
+}
