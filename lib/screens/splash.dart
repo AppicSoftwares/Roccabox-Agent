@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:roccabox_agent/screens/home.dart';
@@ -13,9 +14,15 @@ class Splash extends StatefulWidget {
 
 class _SplashState extends State<Splash> {
   String id = "";
-
+  FirebaseMessaging? auth;
+  var token;
   @override
   void initState() {
+    auth = FirebaseMessaging.instance;
+    auth?.getToken().then((value){
+      print("FirebaseToken "+value.toString());
+      token = value.toString();
+    });
     getLoginStatus();
     super.initState();
   }

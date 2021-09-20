@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:roccabox_agent/screens/chatscreen.dart';
 import 'package:roccabox_agent/screens/user_Detail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Setting.dart';
 
@@ -64,6 +65,13 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
               widget.totalUserList[index].message,
               style: TextStyle(fontSize: 12, color: Color(0xff818181)),
             ),
+            trailing: GestureDetector(
+                onTap: () async {
+                  SharedPreferences pref = await SharedPreferences.getInstance();
+                  var id = pref.getString("id");
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(senderId:id, receiverId: widget.totalUserList[index].userId, name:  widget.totalUserList[index].name)));
+                },
+                child: Icon(Icons.chat, color: Colors.black,size: 24)),
           );
         },
       ),

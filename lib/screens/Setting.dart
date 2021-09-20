@@ -106,12 +106,15 @@ class _ProfileState extends State<Profile> {
                       fontWeight: FontWeight.w500),
                 ),
                 onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              AssignedUsersScreen(totalUserList: totalUserList)));
-                }),
+                  if(totalUserList!=null && totalUserList.length>0) {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                AssignedUsersScreen(
+                                    totalUserList: totalUserList)));
+                  }
+                  }),
             ListTile(
               tileColor: Color(0xffF3F3F3),
               title: Text(
