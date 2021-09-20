@@ -165,7 +165,9 @@ class _LoginState extends State<Login> {
                   )),
               isLoading == true
                   ? Center(
-                      child: CircularProgressIndicator(),
+                      child: Image.asset("assets/loader2.gif",
+                      width: 60,
+                      ),
                     )
                   : GestureDetector(
                       onTap: () {
@@ -272,20 +274,21 @@ class _LoginState extends State<Login> {
     }*/
     await request.then((http.Response response) {
       res = response;
-      final JsonDecoder _decoder = new JsonDecoder();
-      jsonRes = _decoder.convert(response.body.toString());
-      print("Response: " + response.body.toString() + "_");
+     
+    });
+    // var respone = await res.stream.bytesToString();
+
+    if (res != null) {
+      if (res.statusCode == 200) {
+         final JsonDecoder _decoder = new JsonDecoder();
+      jsonRes = _decoder.convert(res.toString());
+      print("Response: " + res.toString() + "_");
       print("ResponseJSON: " + jsonRes.toString() + "_");
       print("status: " + jsonRes["status"].toString() + "_");
       print("message: " + jsonRes["message"].toString() + "_");
       msg = jsonRes["message"].toString();
       name = jsonRes["data"]["name"].toString();
       print("name" + name.toString() + "_");
-    });
-    // var respone = await res.stream.bytesToString();
-
-    if (res != null) {
-      if (res.statusCode == 200) {
         if (jsonRes["status"] == true) {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setString('id', jsonRes["data"]["id"].toString());

@@ -173,5 +173,6 @@ class LanguageChange {
   var OLDPASSWORD = ['Old Password', 'Contraseña anterior'];
   var NEWPASSWORD = ['New Password', 'Nueva contraseña'];
   var CONFIRMPASSWORD = ['Confirm Password', 'confirmar Contraseña'];
+  var MENU = ['Menu', 'Menú'];
 
  }

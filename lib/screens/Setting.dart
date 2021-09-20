@@ -55,8 +55,8 @@ class _ProfileState extends State<Profile> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          //PROFILE
-          languageChange.PROFILE[langCount],
+          //Menu
+          languageChange.MENU[langCount],
           style: TextStyle(
               fontSize: 16,
               color: Color(0xff000000),

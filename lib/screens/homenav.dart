@@ -72,8 +72,8 @@ class _HomeNavState extends State<HomeNav> {
                   color: _index == 3 ? Color(0xffFFBA00) : Color(0xff8E8E8E),
                 ),
 
-                //Profile
-                label: languageChange.PROFILE[langCount])
+                //Menu
+                label: languageChange.MENU[langCount])
           ]),
     );
   }
