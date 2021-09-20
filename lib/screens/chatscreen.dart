@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:roccabox_agent/services/constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,10 +20,13 @@ class _ChatScreenState extends State<ChatScreen> {
   var message = "";
   int _limit = 20;
   int _limitIncrement = 20;
+  var name;
+  var image;
   @override
   void initState() {
     focusNode.addListener(onFocusChange);
     listScrollController.addListener(_scrollListener);
+    getData();
     super.initState();
   }
 
@@ -46,6 +50,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
           backgroundColor: Color(0xffFFFFFF),
@@ -189,7 +194,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       topLeft: docs[index].get("idFrom").toString()==widget.senderId?Radius.circular(30.0):Radius.circular(0.0),
                       topRight: docs[index].get("idFrom").toString()==widget.senderId?Radius.circular(0):Radius.circular(30.0)),
                   elevation: 5.0,
-                  color: Colors.blueAccent,
+                  color: docs[index].get("idFrom").toString()!=widget.senderId?Colors.blueAccent: Color(0xffFFBA00),
                   child: Padding(
                     padding:
                     EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
@@ -356,7 +361,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             curve: Curves.easeOut);
                       }
                     },
-                    color: Colors.yellow[600],
+                    color: Color(0xffFFBA00),
                   ),
                 ),
               ],
@@ -384,12 +389,11 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void updateChatHead(String s) async {
     print("messageeee "+message+"");
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    var name = pref.getString("name");
+
     var documentReference = FirebaseFirestore.instance
         .collection('chat_master')
         .doc("chat_head")
-        .collection(widget.senderId+"-"+widget.receiverId)
+        .collection(widget.senderId)
         .doc(widget.receiverId);
     print("s "+s+"");
 
@@ -413,7 +417,7 @@ class _ChatScreenState extends State<ChatScreen> {
       var documentReference = FirebaseFirestore.instance
           .collection('chat_master')
           .doc("chat_head")
-          .collection(widget.receiverId + "-" + widget.senderId)
+          .collection(widget.receiverId)
           .doc(widget.senderId);
 
       firestoreInstance.runTransaction((transaction) async {
@@ -428,7 +432,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 .toString(),
             'msg': s.toString(),
             'type': "text",
-            'image': pref.getString("image"),
+            'image': image,
             'agent': name,
             'user': widget.name
           },
@@ -436,6 +440,12 @@ class _ChatScreenState extends State<ChatScreen> {
       });
     });
     message = "";
+  }
+
+  void getData() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    name = pref.getString("name");
+    image = pref.getString("image");
   }
 
 }
@@ -552,3 +562,6 @@ color: Colors.white,
 ),
 )
 */
+
+
+
