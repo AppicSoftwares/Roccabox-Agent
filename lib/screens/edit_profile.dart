@@ -8,7 +8,9 @@ import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:roccabox_agent/main.dart';
 import 'package:roccabox_agent/services/APIClient.dart';
+import 'package:roccabox_agent/util/languagecheck.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class EditProfile extends StatefulWidget {
@@ -31,6 +33,7 @@ class _EditProfileState extends State<EditProfile> {
 
   String? uptname;
   String? uptemail;
+  String? uptphone;
   // TextEditingController uptname = TextEditingController();
   // TextEditingController uptemail = TextEditingController();
   // TextEditingController uptname = TextEditingController();
@@ -104,6 +107,12 @@ class _EditProfileState extends State<EditProfile> {
         prefs.setString('email', jsonRes["data"]["email"].toString());
         prefs.setString('image', jsonRes["data"]["image"].toString());
         prefs.setString('name', jsonRes["data"]["name"].toString());
+        prefs.setString('phone', jsonRes["data"]["phone"].toString());
+        
+
+        
+
+
         // prefs.setString('phone', jsonRes["data"]["phone"].toString());
         prefs.commit();
         setState(() {
@@ -156,6 +165,11 @@ class _EditProfileState extends State<EditProfile> {
   final formkey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
+
+    LanguageChange languageChange = new LanguageChange();
+ 
+
+
     //  file == null ? print('null') : print(file!.path);
     image != null ? print(image) : print("imagenotfound");
     return Scaffold(
@@ -167,7 +181,9 @@ class _EditProfileState extends State<EditProfile> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Settings',
+
+          // Profile
+          languageChange.PROFILE[langCount],
           style: TextStyle(
               fontSize: 16,
               color: Color(0xff000000),
@@ -224,7 +240,8 @@ class _EditProfileState extends State<EditProfile> {
                 Padding(
                   padding: const EdgeInsets.only(top: 30.0),
                   child: Text(
-                    'Name',
+                    //Name
+                    languageChange.NAME[langCount],
                     style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 18,
@@ -255,7 +272,8 @@ class _EditProfileState extends State<EditProfile> {
                 Padding(
                   padding: const EdgeInsets.only(top: 0.0),
                   child: Text(
-                    'Email',
+                    //Email
+                    languageChange.EMAIL[langCount],
                     style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 18,
@@ -289,7 +307,8 @@ class _EditProfileState extends State<EditProfile> {
                 Padding(
                   padding: const EdgeInsets.only(top: 0.0),
                   child: Text(
-                    'Phone Number',
+                    //Phone Number
+                    languageChange.PHONENUMBER[langCount],
                     style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 18,
@@ -336,6 +355,7 @@ class _EditProfileState extends State<EditProfile> {
                             });
                         print("UpdateName "+uptname.toString()+"^^");
                         print("UpdateEmail "+uptemail.toString()+"^^");
+                        print("UpdatePhone "+uptphone.toString()+"^^");
                         if(uptname==null){
                           uptname = nameController.text.toString();
                         }
@@ -361,7 +381,8 @@ class _EditProfileState extends State<EditProfile> {
                           ),
                           child: Center(
                             child: Text(
-                              'Update Profile',
+                              //update profile
+                              languageChange.UPDATEPROFILE[langCount],
                               style: TextStyle(
                                   fontFamily: 'Poppins',
                                   fontSize: 16,
@@ -393,6 +414,7 @@ class _EditProfileState extends State<EditProfile> {
     print("id " + id + "");
     print("email " + email + "");
     print("image " + image + "");
+    print("phone " + phone + "");
     setState(() {});
   }
 }

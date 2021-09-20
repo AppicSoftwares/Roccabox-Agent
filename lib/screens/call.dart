@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:roccabox_agent/util/languagecheck.dart';
+
+import '../main.dart';
 
 class Call extends StatefulWidget {
   @override
@@ -8,13 +11,16 @@ class Call extends StatefulWidget {
 class _CallState extends State<Call> {
   @override
   Widget build(BuildContext context) {
+    LanguageChange languageChange = new LanguageChange();
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xffFFFFFF),
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Call',
+
+          // Call
+          languageChange.CALL[langCount],
           style: TextStyle(
               fontSize: 16,
               color: Color(0xff000000),

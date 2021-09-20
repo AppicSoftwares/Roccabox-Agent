@@ -4,6 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'screens/splash.dart';
 
+
+int langCount = 0;
+
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();

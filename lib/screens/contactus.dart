@@ -1,5 +1,7 @@
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:roccabox_agent/main.dart';
+import 'package:roccabox_agent/util/languagecheck.dart';
 
 class Contact extends StatefulWidget {
   @override
@@ -9,6 +11,9 @@ class Contact extends StatefulWidget {
 class _ContactState extends State<Contact> {
   @override
   Widget build(BuildContext context) {
+
+  LanguageChange languagecheck = new LanguageChange();
+
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(
@@ -18,7 +23,9 @@ class _ContactState extends State<Contact> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Contact Us',
+
+          // Contact Us
+          languagecheck.CONTACT[langCount],
           style: TextStyle(
               fontSize: 16,
               color: Color(0xff000000),
@@ -34,7 +41,8 @@ class _ContactState extends State<Contact> {
               Padding(
                 padding: const EdgeInsets.only(top: 30.0),
                 child: Text(
-                  'Name',
+                  //name
+                  languagecheck.NAME[langCount],
                   style: TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 18,
@@ -46,7 +54,7 @@ class _ContactState extends State<Contact> {
                 padding: const EdgeInsets.only(top: 10.0, bottom: 20),
                 child: TextField(
                   decoration: InputDecoration(
-                      labelText: 'Name',
+                      labelText: languagecheck.NAME[langCount],
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10))),
                 ),
@@ -54,7 +62,8 @@ class _ContactState extends State<Contact> {
               Padding(
                 padding: const EdgeInsets.only(top: 0.0),
                 child: Text(
-                  'Email',
+                  //Email
+                  languagecheck.EMAIL[langCount],
                   style: TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 18,
@@ -74,7 +83,8 @@ class _ContactState extends State<Contact> {
               Padding(
                 padding: const EdgeInsets.only(top: 0.0),
                 child: Text(
-                  'Phone Number',
+                  //Phone Number
+                  languagecheck.PHONENUMBER[langCount],
                   style: TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 18,
@@ -105,7 +115,8 @@ class _ContactState extends State<Contact> {
                 ),
               ),
               Text(
-                'Message',
+                //Message
+                languagecheck.MESSAGE[langCount],
                 style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 18,
@@ -117,7 +128,8 @@ class _ContactState extends State<Contact> {
                 child: TextField(
                   maxLines: 3,
                   decoration: InputDecoration(
-                      hintText: 'Type a Message',
+                    //Type a message
+                      hintText: languagecheck.TYPEAMESSAGE[langCount],
                       // label: Text(
                       //   'Enter Price',
                       // ),
@@ -131,7 +143,9 @@ class _ContactState extends State<Contact> {
                     borderRadius: BorderRadius.circular(10)),
                 height: 50,
                 child: Center(
-                    child: Text('Next',
+                    child: Text(
+                      //Next
+                      languagecheck.NEXT[langCount],
                         style: TextStyle(fontSize: 16, color: Colors.white))),
               ),
             ],

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:roccabox_agent/main.dart';
 import 'package:roccabox_agent/screens/change_Password.dart';
 import 'package:roccabox_agent/screens/edit_profile.dart';
 import 'package:roccabox_agent/screens/login.dart';
@@ -8,6 +9,7 @@ import 'package:roccabox_agent/screens/privacy.dart';
 import 'package:roccabox_agent/screens/terms.dart';
 import 'package:roccabox_agent/screens/assigned_users.dart';
 import 'package:roccabox_agent/services/APIClient.dart';
+import 'package:roccabox_agent/util/languagecheck.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'aboutUs.dart';
 import 'contactus.dart';
@@ -15,6 +17,7 @@ import 'language.dart';
 import 'package:http/http.dart' as http;
 
 class Profile extends StatefulWidget {
+  
   @override
   State<Profile> createState() => _ProfileState();
 }
@@ -23,25 +26,37 @@ class _ProfileState extends State<Profile> {
   List data = [];
   List<TotalUserList> totalUserList = [];
   var count = "";
+  var email;
+  var name;
+  
 
+  
+  
   bool isLoading = false;
 
   @override
   void initState() {
+     getData();
     super.initState();
+   
     getUserList();
     isLoading = true;
   }
 
+    LanguageChange languageChange = new LanguageChange();
+
   @override
+  
   Widget build(BuildContext context) {
+    print("jjj" + email.toString() + "");
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xffFFFFFF),
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Profile',
+          //PROFILE
+          languageChange.PROFILE[langCount],
           style: TextStyle(
               fontSize: 16,
               color: Color(0xff000000),
@@ -56,20 +71,27 @@ class _ProfileState extends State<Profile> {
                   EdgeInsets.symmetric(horizontal: 10, vertical: 20),
               leading: Image.asset('assets/avatar.png'),
               title: Text(
-                'Testing User',
+                (name != null) ? name : "",
                 style: TextStyle(
                     fontSize: 16,
                     color: Color(0xff000000),
                     fontWeight: FontWeight.w600),
               ),
-              subtitle: Text('test@gmail.com'),
+                subtitle: Text(
+                  (email.toString() != "null") ?
+                    email.toString():""
+                   
+                ),
+                
               trailing: TextButton(
                   onPressed: () {
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) => EditProfile()));
                   },
                   child: Text(
-                    'Edit Profile',
+
+                    //EDIT PROFILE
+                    languageChange.EDIT[langCount],
                     style: TextStyle(
                       fontSize: 14,
                       color: Color(0xffFFBA00),
@@ -80,7 +102,8 @@ class _ProfileState extends State<Profile> {
             ListTile(
               tileColor: Color(0xffF3F3F3),
               title: Text(
-                'Total No. of Clients',
+                //Total No. of clients
+                languageChange.TOTALNOOFCLIENTS[langCount],
                 style: TextStyle(
                     fontSize: 16,
                     color: Color(0xff000000),
@@ -92,7 +115,8 @@ class _ProfileState extends State<Profile> {
                 //     MaterialPageRoute(builder: (context) => PropertyList())),
                 //tileColor: Color(0xffF3F3F3),
                 title: Text(
-                  'Total User',
+                  languageChange.TOTALUSER[langCount],
+                  // total user
                   style: TextStyle(
                       fontSize: 16,
                       color: Color(0xff000000),
@@ -118,7 +142,8 @@ class _ProfileState extends State<Profile> {
             ListTile(
               tileColor: Color(0xffF3F3F3),
               title: Text(
-                'Help',
+                //Help
+                languageChange.HELP[langCount],
                 style: TextStyle(
                     fontSize: 16,
                     color: Color(0xff000000),
@@ -127,46 +152,12 @@ class _ProfileState extends State<Profile> {
             ),
             ListTile(
                 onTap: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Privacy())),
-                //tileColor: Color(0xffF3F3F3),
-                title: Text(
-                  'Privacy and security',
-                  style: TextStyle(
-                      fontSize: 16,
-                      color: Color(0xff000000),
-                      fontWeight: FontWeight.w500),
-                ),
-                trailing: Icon(
-                  Icons.arrow_forward_ios,
-                  size: 20,
-                )),
-            Divider(
-              color: Color(0xff707070),
-            ),
-            ListTile(
-                onTap: () => Navigator.push(context,
                     MaterialPageRoute(builder: (context) => AboutUs())),
                 //tileColor: Color(0xffF3F3F3),
                 title: Text(
-                  'About Us',
-                  style: TextStyle(
-                      fontSize: 16,
-                      color: Color(0xff000000),
-                      fontWeight: FontWeight.w500),
-                ),
-                trailing: Icon(
-                  Icons.arrow_forward_ios,
-                  size: 20,
-                )),
-            Divider(
-              color: Color(0xff707070),
-            ),
-            ListTile(
-                onTap: () => Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => Terms())),
-                //tileColor: Color(0xffF3F3F3),
-                title: Text(
-                  'Terms & Conditions',
+
+                  // about us
+                  languageChange.ABOUT[langCount],
                   style: TextStyle(
                       fontSize: 16,
                       color: Color(0xff000000),
@@ -185,7 +176,9 @@ class _ProfileState extends State<Profile> {
                 //tileColor: Color(0xffF3F3F3),
                 //tileColor: Color(0xffF3F3F3),
                 title: Text(
-                  'Contact Us',
+
+                  //contact us
+                  languageChange.CONTACT[langCount],
                   style: TextStyle(
                       fontSize: 16,
                       color: Color(0xff000000),
@@ -195,10 +188,53 @@ class _ProfileState extends State<Profile> {
                   Icons.arrow_forward_ios,
                   size: 20,
                 )),
+                 Divider(
+              color: Color(0xff707070),
+            ),
+            ListTile(
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => Privacy())),
+                //tileColor: Color(0xffF3F3F3),
+                title: Text(
+                  // privacy and security
+                  languageChange.PRIVACY[langCount],
+                  style: TextStyle(
+                      fontSize: 16,
+                      color: Color(0xff000000),
+                      fontWeight: FontWeight.w500),
+                ),
+                trailing: Icon(
+                  Icons.arrow_forward_ios,
+                  size: 20,
+                )),
+            Divider(
+              color: Color(0xff707070),
+            ),
+            
+            ListTile(
+                onTap: () => Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Terms())),
+                //tileColor: Color(0xffF3F3F3),
+                title: Text(
+
+                  // Terms and conditions
+                  languageChange.TERMS[langCount],
+                  style: TextStyle(
+                      fontSize: 16,
+                      color: Color(0xff000000),
+                      fontWeight: FontWeight.w500),
+                ),
+                trailing: Icon(
+                  Icons.arrow_forward_ios,
+                  size: 20,
+                )),
+           
             ListTile(
               tileColor: Color(0xffF3F3F3),
               title: Text(
-                'Settings',
+
+                //SETTINGS
+                languageChange.SETTINGS[langCount],
                 style: TextStyle(
                     fontSize: 16,
                     color: Color(0xff000000),
@@ -212,7 +248,8 @@ class _ProfileState extends State<Profile> {
                 },
                 //tileColor: Color(0xffF3F3F3),
                 title: Text(
-                  'Language(English)',
+                  //LANGUAGE
+                  languageChange.LANGUAGE[langCount],
                   style: TextStyle(
                       fontSize: 16,
                       color: Color(0xff000000),
@@ -234,7 +271,8 @@ class _ProfileState extends State<Profile> {
                 },
                 //tileColor: Color(0xffF3F3F3),
                 title: Text(
-                  'Change Password',
+                  //CHANGE PASSWORD
+                  languageChange.CHANGEPASWWORD[langCount],
                   style: TextStyle(
                       fontSize: 16,
                       color: Color(0xff000000),
@@ -250,7 +288,8 @@ class _ProfileState extends State<Profile> {
             ListTile(
               //tileColor: Color(0xffF3F3F3),
               title: Text(
-                'Logout',
+                //LOGOUT
+                languageChange.LOGOUT[langCount],
                 style: TextStyle(
                     fontSize: 16,
                     color: Color(0xff000000),
@@ -276,6 +315,7 @@ class _ProfileState extends State<Profile> {
   Future<dynamic> getUserList() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     var id = pref.getString("id").toString();
+   
     var request = http.get(Uri.parse(
       RestDatasource.GETASSIGNEDUSER_URL + "41",
     ));
@@ -362,6 +402,19 @@ class _ProfileState extends State<Profile> {
         //     fontSize: 16.0);
       });
     }
+     getData();
+  }
+
+  void getData()async  {
+     SharedPreferences pref = await SharedPreferences.getInstance();
+    var id = pref.getString("id").toString();
+    email = pref.getString("email").toString();
+    name = pref.getString("name").toString();
+
+    print("yyy" + email.toString() + "");
+    setState(() {
+      
+    });
   }
 }
 

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:roccabox_agent/main.dart';
+import 'package:roccabox_agent/screens/homenav.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Language extends StatefulWidget {
   @override
@@ -37,9 +40,15 @@ class _LanguageState extends State<Language> {
                   borderRadius: BorderRadius.circular(10),
                   color: lang == 'English' ? Color(0xffFFBA00) : Colors.white),
               child: ListTile(
-                onTap: () {
+                onTap: () async{
+                   var pref = await SharedPreferences.getInstance();
+                  pref.setInt("lang",0);
+                  pref.commit();
                   setState(() {
                     lang = 'English';
+                    langCount = 0;
+                    Navigator.pushReplacement(context,
+                        MaterialPageRoute(builder: (context) => HomeNav()));
                   });
                 },
                 title: Text('English',
@@ -77,9 +86,15 @@ class _LanguageState extends State<Language> {
                   borderRadius: BorderRadius.circular(10),
                   color: lang == 'Spanish' ? Color(0xffFFBA00) : Colors.white),
               child: ListTile(
-                onTap: () {
+                onTap: () async {
+                    var pref = await SharedPreferences.getInstance();
+                  pref.setInt("lang",1);
+                  pref.commit();
                   setState(() {
                     lang = 'Spanish';
+                    langCount = 1;
+                    Navigator.pushReplacement(context,
+                        MaterialPageRoute(builder: (context) => HomeNav()));
                   });
                 },
                 title: Text('Spanish',

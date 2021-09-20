@@ -32,6 +32,7 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
       body: SingleChildScrollView(
         child: SafeArea(
@@ -173,7 +174,7 @@ class _LoginState extends State<Login> {
                             setState(() {
                               isLoading = true;
                             });
-                            postApi(email.toString(), pass.toString());
+                            postApi(email.toString(), pass.toString(), );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
@@ -239,10 +240,12 @@ class _LoginState extends State<Login> {
     );
   }
 
-  Future<dynamic> postApi(String email, String password) async {
+  Future<dynamic> postApi(String email, String password, ) async {
+
     print("email: " + email.toString().trim() + "_");
     print("password: " + password.toString().trim() + "_");
     print("role_id: " + "2");
+    print("name: " + name.toString().trim() + "_");
     var jsonRes;
     late http.Response res;
     String msg = "";
@@ -253,7 +256,8 @@ class _LoginState extends State<Login> {
         body: {
           "email": email.toString().trim(),
           "password": password.toString().trim(),
-          "role_id": "2"
+          "role_id": "2",
+         
         });
 
 /*    Map<String, String> headers = {
@@ -275,6 +279,8 @@ class _LoginState extends State<Login> {
       print("status: " + jsonRes["status"].toString() + "_");
       print("message: " + jsonRes["message"].toString() + "_");
       msg = jsonRes["message"].toString();
+      name = jsonRes["data"]["name"].toString();
+      print("name" + name.toString() + "_");
     });
     // var respone = await res.stream.bytesToString();
 
@@ -284,6 +290,9 @@ class _LoginState extends State<Login> {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setString('id', jsonRes["data"]["id"].toString());
           prefs.setString('email', jsonRes["data"]["email"].toString());
+          prefs.setString('name', jsonRes["data"]["name"].toString());
+          prefs.setString('phone', jsonRes["data"]["phone"].toString());
+
           prefs.commit();
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(msg)));

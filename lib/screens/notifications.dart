@@ -2,6 +2,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:roccabox_agent/screens/holidayrent.dart';
+import 'package:roccabox_agent/util/languagecheck.dart';
+
+import '../main.dart';
 
 class Notifications extends StatefulWidget {
   @override
@@ -9,6 +12,8 @@ class Notifications extends StatefulWidget {
 }
 
 class _NotificationsState extends State<Notifications> {
+  
+
   List names = [
     'Rajveer Place',
     'Taj Place',
@@ -26,13 +31,16 @@ class _NotificationsState extends State<Notifications> {
   ];
   @override
   Widget build(BuildContext context) {
+    LanguageChange languageChange = new LanguageChange();
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xffFFFFFF),
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Notifications',
+
+          // Notifications
+          languageChange.NOTIFICATION[langCount],
           style: TextStyle(
               fontSize: 16,
               color: Color(0xff000000),

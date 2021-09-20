@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:roccabox_agent/main.dart';
+import 'package:roccabox_agent/util/languagecheck.dart';
 
 class AboutUs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+
+    LanguageChange languagecheck = new LanguageChange();
+
+
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(
@@ -12,7 +18,8 @@ class AboutUs extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'About Us',
+          //About us
+          languagecheck.ABOUT[langCount],
           style: TextStyle(
               fontSize: 16,
               color: Color(0xff000000),

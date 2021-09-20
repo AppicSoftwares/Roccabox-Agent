@@ -8,7 +8,9 @@ import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:roccabox_agent/main.dart';
 import 'package:roccabox_agent/services/APIClient.dart';
+import 'package:roccabox_agent/util/languagecheck.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ChangePaasword extends StatefulWidget {
@@ -35,6 +37,8 @@ class _EditProfileState extends State<ChangePaasword> {
   final formkey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
+
+    LanguageChange languageChange = new LanguageChange();
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(
@@ -44,7 +48,9 @@ class _EditProfileState extends State<ChangePaasword> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Password Update',
+          //Update Password
+          languageChange.PASSWORDUPDATE[langCount]
+          ,
           style: TextStyle(
               fontSize: 16,
               color: Color(0xff000000),
@@ -64,13 +70,15 @@ class _EditProfileState extends State<ChangePaasword> {
                   child: Column(
                     children: [
                       Text(
-                        "Change Password",
+                        // Change Password
+                        languageChange.CHANGEPASWWORD[langCount],
                         style:
                             TextStyle(color: Color(0xffFFBA00), fontSize: 30),
                       ),
                       SizedBox(height: 3),
                       Text(
-                        "Create your new secured password",
+                        //Create your new secured password
+                        languageChange.CREATEYOURNEWPASSWORD[langCount],
                         style: TextStyle(color: Colors.grey, fontSize: 14),
                       ),
                     ],
@@ -82,7 +90,8 @@ class _EditProfileState extends State<ChangePaasword> {
                 Padding(
                   padding: const EdgeInsets.only(top: 30.0),
                   child: Text(
-                    'Old Password',
+                    // Old Password
+                    languageChange.OLDPASSWORD[langCount],
                     style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 18,
@@ -112,7 +121,8 @@ class _EditProfileState extends State<ChangePaasword> {
                 Padding(
                   padding: const EdgeInsets.only(top: 0.0),
                   child: Text(
-                    'New Password',
+                    //New Password
+                    languageChange.NEWPASSWORD[langCount],
                     style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 18,
@@ -134,7 +144,8 @@ class _EditProfileState extends State<ChangePaasword> {
                 Padding(
                   padding: const EdgeInsets.only(top: 0.0),
                   child: Text(
-                    'Confirm Password',
+                    //Confirm Password
+                    languageChange.CONFIRMPASSWORD[langCount],
                     style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 18,
@@ -203,7 +214,9 @@ class _EditProfileState extends State<ChangePaasword> {
                           ),
                           child: Center(
                             child: Text(
-                              'Update Password',
+
+                              //Update Password
+                              languageChange.UPDATEPROFILE[langCount],
                               style: TextStyle(
                                   fontFamily: 'Poppins',
                                   fontSize: 16,
