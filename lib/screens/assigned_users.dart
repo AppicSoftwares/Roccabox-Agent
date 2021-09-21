@@ -51,9 +51,14 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
                   P_Agency_FilterId: widget.totalUserList[index].filter_id,
                   totalUserList: widget.totalUserList[index],
                 ))),
-            leading: CircleAvatar(
-              backgroundImage: AssetImage('assets/img1.png'),
-            ),
+            leading:  widget.totalUserList[index].image == null
+                                    ? Image.asset(
+                                        'assets/avatar.png',
+                                      )
+                                    : CircleAvatar(
+                                      radius: 30,
+                                        backgroundImage: NetworkImage(widget.totalUserList[index].image),
+                                      ),
             title: Text(
               widget.totalUserList[index].name,
               style: TextStyle(
