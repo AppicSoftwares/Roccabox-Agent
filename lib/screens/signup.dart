@@ -30,6 +30,7 @@ class _SignupState extends State<Signup> {
   bool isLoading = false;
   String? firstname;
   String? lastname;
+  String? code = "44";
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -177,7 +178,13 @@ class _SignupState extends State<Signup> {
                         decoration: InputDecoration(
                             prefixIcon: CountryCodePicker(
                               // showFlag: false,
-                              onChanged: print,
+                              onChanged: (val)=>{
+                                phone = "",
+                                code = val.toString().substring(1),
+                                print(code.toString()),
+
+
+                              },
                               // Initial selection and favorite can be one of code ('IT') OR dial_code('+39')
                               initialSelection: 'gb',
                               // favorite: ['+91', 'FR'],
@@ -252,10 +259,14 @@ class _SignupState extends State<Signup> {
                             setState(() {
                               isLoading = true;
                             });
+
+                            var sendPhone =  code!+phone.toString();
                             postApi(
+                              
                                 email.toString(),
+                                
                                 password.toString(),
-                                phone.toString(),
+                                sendPhone.toString(),
                                 firstname.toString() +
                                     ' ' +
                                     lastname.toString());
@@ -315,11 +326,15 @@ class _SignupState extends State<Signup> {
   }
 
   Future<dynamic> postApi(
+    
       String email, String password, String phone, String name) async {
     print("name: " + email.toString().trim() + "_");
     print("email: " + email.toString().trim() + "_");
     print("password: " + password.toString().trim() + "_");
     print("phone: " + phone.toString().trim() + "_");
+     print("code: " + phone.toString().trim() + "_");
+
+
     print("role_id: " + "2");
     var jsonRes;
     late http.Response res;
@@ -354,6 +369,7 @@ class _SignupState extends State<Signup> {
       print("ResponseJSON: " + jsonRes.toString() + "_");
       print("status: " + jsonRes["status"].toString() + "_");
       print("message: " + jsonRes["message"].toString() + "_");
+      
       msg = jsonRes["message"].toString();
     });
     // var respone = await res.stream.bytesToString();
@@ -373,6 +389,8 @@ class _SignupState extends State<Signup> {
         print('done');
         prefs.setString('id', jsonRes["data"]["id"].toString());
         prefs.setString('email', jsonRes["data"]["email"].toString());
+        prefs.setString('name', jsonRes["data"]["name"].toString());
+        prefs.setString('phone', jsonRes["data"]["phone"].toString());
         prefs.commit();
         Navigator.pushAndRemoveUntil(
             context,

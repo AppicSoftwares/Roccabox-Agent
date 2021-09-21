@@ -28,6 +28,7 @@ class _ProfileState extends State<Profile> {
   var count = "";
   var email;
   var name;
+  var image;
   
 
   
@@ -68,8 +69,15 @@ class _ProfileState extends State<Profile> {
           children: [
             ListTile(
               contentPadding:
-                  EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-              leading: Image.asset('assets/avatar.png'),
+                  EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              leading: image == null
+                                    ? Image.asset(
+                                        'assets/avatar.png',
+                                      )
+                                    : CircleAvatar(
+                                      radius: 30,
+                                        backgroundImage: NetworkImage(image),
+                                      ),
               title: Text(
                 (name != null) ? name : "",
                 style: TextStyle(
@@ -412,6 +420,7 @@ class _ProfileState extends State<Profile> {
     var id = pref.getString("id").toString();
     email = pref.getString("email").toString();
     name = pref.getString("name").toString();
+    image = pref.getString("image").toString();
 
     print("yyy" + email.toString() + "");
     setState(() {

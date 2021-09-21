@@ -30,7 +30,8 @@ class _EditProfileState extends State<EditProfile> {
     getData();
     super.initState();
   }
-
+  String twodigitnumber = "";
+  String code = "";
   String? uptname;
   String? uptemail;
   String? uptphone;
@@ -62,21 +63,32 @@ class _EditProfileState extends State<EditProfile> {
   }
 
   Future<dynamic> uploadImage(
+    
     String firstName,
     String email,
+    String phone,
   ) async {
+
+
     print("Id "+id+"");
+        print("phone "+phone +"");
+
     var request = http.MultipartRequest(
       "POST",
       Uri.parse(
         RestDatasource.BASE_URL + "updateProfile",
       ),
     );
+    if(firstName.toString() != "null" || firstName.toString()!="") {
+      request.fields["name"] = firstName;
+    }
+    
     if(email.toString() != "null" || email.toString()!="") {
       request.fields["email"] = email;
     }
-    if(firstName.toString() != "null" || firstName.toString()!="") {
-      request.fields["name"] = firstName;
+    
+    if(phone.toString() != "null" || firstName.toString()!="") {
+      request.fields["phone"] = phone;
     }
 
     request.fields["id"] = id;
@@ -97,9 +109,11 @@ class _EditProfileState extends State<EditProfile> {
     if (res.statusCode == 200) {
       var respone = await res.stream.bytesToString();
       final JsonDecoder _decoder = new JsonDecoder();
+     
       jsonRes = _decoder.convert(respone.toString());
       print("Response: " + jsonRes.toString() + "_");
       print(jsonRes["status"]);
+      print("Update Phone Number:" +jsonRes["data"] ["phone"].toString() + "_");
       if (jsonRes["status"].toString() == "true") {
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -171,7 +185,7 @@ class _EditProfileState extends State<EditProfile> {
 
 
     //  file == null ? print('null') : print(file!.path);
-    image != null ? print(image) : print("imagenotfound");
+    image != null ? print("ijiji"+image) : print("imagenotfound");
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(
@@ -269,6 +283,42 @@ class _EditProfileState extends State<EditProfile> {
                             borderRadius: BorderRadius.circular(10))),
                   ),
                 ),
+
+                Padding(
+                  padding: const EdgeInsets.only(top: 0.0),
+                  child:  Text(
+                    //Phone Number
+                    languageChange.PHONENUMBER[langCount],
+                    style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xff000000)),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 10.0, bottom: 20),
+                  child: TextField(
+                    controller: numberController,
+                    enabled: true,
+                    decoration: InputDecoration(
+                        prefixIcon: CountryCodePicker(
+                          // showFlag: false,
+                          onChanged: print,
+                          // Initial selection and favorite can be one of code ('IT') OR dial_code('+39')
+                          initialSelection: 'gb',
+                          // favorite: ['+91', 'FR'],
+                          // optional. Shows only country name and flag
+                          showCountryOnly: false,
+                          // optional. Shows only country name and flag when popup is closed.
+                          showOnlyCountryWhenClosed: false,
+                          // optional. aligns the flag and the Text left
+                          alignLeft: false,
+                        ),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10))),
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.only(top: 0.0),
                   child: Text(
@@ -284,6 +334,7 @@ class _EditProfileState extends State<EditProfile> {
                 Padding(
                   padding: const EdgeInsets.only(top: 10.0, bottom: 20),
                   child: TextFormField(
+                    enabled: false,
                     controller: emailController,
                     validator: (val) {
                       if (val == null || val.isEmpty) {
@@ -304,41 +355,7 @@ class _EditProfileState extends State<EditProfile> {
                             borderRadius: BorderRadius.circular(10))),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 0.0),
-                  child: Text(
-                    //Phone Number
-                    languageChange.PHONENUMBER[langCount],
-                    style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xff000000)),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 10.0, bottom: 20),
-                  child: TextField(
-                    controller: numberController,
-                    enabled: false,
-                    decoration: InputDecoration(
-                        prefixIcon: CountryCodePicker(
-                          // showFlag: false,
-                          onChanged: print,
-                          // Initial selection and favorite can be one of code ('IT') OR dial_code('+39')
-                          initialSelection: 'gb',
-                          // favorite: ['+91', 'FR'],
-                          // optional. Shows only country name and flag
-                          showCountryOnly: false,
-                          // optional. Shows only country name and flag when popup is closed.
-                          showOnlyCountryWhenClosed: false,
-                          // optional. aligns the flag and the Text left
-                          alignLeft: false,
-                        ),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10))),
-                  ),
-                ),
+                
                 isLoading
                     ? Align(
                         alignment: Alignment.center,
@@ -362,7 +379,11 @@ class _EditProfileState extends State<EditProfile> {
                             if(uptemail==null){
                               uptemail = emailController.text.toString();
                             }
-                            uploadImage(uptname.toString(), uptemail.toString());
+
+                            if(uptphone==null){
+                          uptphone = numberController.text.toString();
+                        }
+                            uploadImage(uptname.toString(), uptemail.toString(), uptphone.toString());
 
                             // userRegister(email.toString(), phone.toString(),
                             //     firstname.toString() + ' ' + lastname.toString());
@@ -408,13 +429,19 @@ class _EditProfileState extends State<EditProfile> {
     emailController.text = pref.getString("email").toString();
     phone = pref.getString("phone");
     numberController.text = pref.getString("phone").toString();
+    twodigitnumber = numberController.text.substring(0, 2);
+    print("sddd"+twodigitnumber.toString());
+  
+    
     image = pref.getString("image");
     id = pref.getString("id").toString();
+        
+
     print("name " + name + "");
     print("id " + id + "");
     print("email " + email + "");
     print("image " + image + "");
-    print("phone " + phone + "");
     setState(() {});
+    
   }
 }

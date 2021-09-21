@@ -21,10 +21,6 @@ class _ForgotState extends State<Forgot> {
   String? email;
   bool isloading = false;
 
-  
-  
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,8 +66,6 @@ class _ForgotState extends State<Forgot> {
                       }
                       return null;
                     },
-
-                    
                     decoration: InputDecoration(
                         labelText: 'Email Id',
                         border: OutlineInputBorder(
@@ -89,33 +83,33 @@ class _ForgotState extends State<Forgot> {
                           ? CircularProgressIndicator()
                           : CupertinoActivityIndicator())
                   : GestureDetector(
-                onTap: () {
-                  
-                  if (formkey.currentState!.validate()) {
-                    if (EmailValidator.validate(email.toString())) {
-                        forgotPassword(email.toString());
-                      // Navigator.push(context,
-                      //     MaterialPageRoute(builder: (context) => ChangePass()));
-                    }
-                  }
-          
-                },
-                // onTap: () {
+                      onTap: () {
+                        if (formkey.currentState!.validate()) {
+                          if (EmailValidator.validate(email.toString())) {
+                            forgotPassword(email.toString());
+                            // Navigator.push(context,
+                            //     MaterialPageRoute(builder: (context) => ChangePass()));
+                          }
+                        }
+                      },
+                      // onTap: () {
 
-                // },
-                child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-                  height: 55,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Color(0xffFFBA00)),
-                  child: Center(
-                      child: Text(
-                    'Send Verification Email',
-                    style: TextStyle(fontSize: 15, color: Color(0xff000000)),
-                  )),
-                ),
-              ),
+                      // },
+                      child: Container(
+                        margin:
+                            EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+                        height: 55,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            color: Color(0xffFFBA00)),
+                        child: Center(
+                            child: Text(
+                          'Send Verification Email',
+                          style:
+                              TextStyle(fontSize: 15, color: Color(0xff000000)),
+                        )),
+                      ),
+                    ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 0),
                 child: Row(
@@ -145,7 +139,7 @@ class _ForgotState extends State<Forgot> {
     );
   }
 
-  Future <dynamic> forgotPassword(String email) async {
+  Future<dynamic> forgotPassword(String email) async {
     setState(() {
       isloading = true;
     });
@@ -155,51 +149,38 @@ class _ForgotState extends State<Forgot> {
     var jsonRes;
     http.Response? res;
     var request = http.post(Uri.parse(RestDatasource.FORGOTPASSWORD_URL),
-     body: {"email": email.toString()}
-    );
+        body: {"email": email.toString()});
 
-  await request.then((http.Response response) {
-    res = response;
-  });
+    await request.then((http.Response response) {
+      res = response;
+    });
 
-  if (res!.statusCode == 200) {
-
-    final JsonDecoder _decoder = new JsonDecoder();
-    jsonRes = _decoder.convert(res!.body.toString());
+    if (res!.statusCode == 200) {
+      final JsonDecoder _decoder = new JsonDecoder();
+      jsonRes = _decoder.convert(res!.body.toString());
       print("Response: " + res!.body.toString() + "_");
       print("ResponseJSON: " + jsonRes.toString() + "_");
       print("status: " + jsonRes["status"].toString() + "_");
       print("message: " + jsonRes["message"].toString() + "_");
 
- setState(() {
-          isloading = false;
-        });
+      setState(() {
+        isloading = false;
+      });
       if (jsonRes["status"] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(jsonRes["message"].toString()))
-        );
+            SnackBar(content: Text(jsonRes["message"].toString())));
 
         Navigator.pop(context);
-
-       
-      
-      }else{
-
- setState(() {
+      } else {
+        setState(() {
           isloading = false;
         });
-         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(jsonRes["message"].toString()))
-        );
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(jsonRes["message"].toString())));
       }
-    
-
-
-  }else{
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error while fetvhing data'))
-    );
-  }
-    
+    } else {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error while fetvhing data')));
+    }
   }
 }
