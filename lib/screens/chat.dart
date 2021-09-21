@@ -64,6 +64,7 @@ class _ChatState extends State<Chat> {
                 model.name = json["user"].toString();
                 model.image = json["image"].toString();
                 model.message = json["msg"].toString();
+                model.clicked = json["clicked"].toString();
 
               listUser.add(model);
             });
@@ -85,9 +86,9 @@ class _ChatState extends State<Chat> {
                           image: listUser[index].image,
                           receiverId: listUser[index].id,
                           senderId: id,))),
-                leading: CircleAvatar(
+                leading:listUser[index].image==null? CircleAvatar(
                   backgroundImage: AssetImage('assets/img1.png'),
-                ),
+                ):CircleAvatar(backgroundImage: NetworkImage(listUser[index].image.toString() )),
                 title: Text(
                   listUser == null ? "" : listUser[index].name.toString(),
                   style: TextStyle(
@@ -99,7 +100,8 @@ class _ChatState extends State<Chat> {
                   listUser == null ? "" : listUser[index].message == null
                       ? ""
                       : listUser[index].message.toString(),
-                  style: TextStyle(fontSize: 12, color: Color(0xff818181)),
+                  style: TextStyle(fontSize: listUser[index].clicked != null &&  listUser[index].clicked == "true"?12:16, color:  listUser[index].clicked != null &&  listUser[index].clicked == "true"?Color(0xff818181):Colors.black,
+                      fontWeight:listUser[index].clicked != null &&  listUser[index].clicked == "true"?FontWeight.normal:FontWeight.bold ),
                 ),
               );
             },
@@ -159,6 +161,7 @@ class UserList{
   String? id;
   String? image;
   String? message;
+  String? clicked;
 }
 
 

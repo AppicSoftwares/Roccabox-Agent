@@ -317,7 +317,7 @@ class _ProfileState extends State<Profile> {
     var id = pref.getString("id").toString();
    
     var request = http.get(Uri.parse(
-      RestDatasource.GETASSIGNEDUSER_URL + "41",
+      RestDatasource.GETASSIGNEDUSER_URL + id,
     ));
 
     var jsonRes;
@@ -349,7 +349,9 @@ class _ProfileState extends State<Profile> {
               modelSearch.email = jsonArray[i]["email"].toString();
               modelSearch.phone = jsonArray[i]["phone"].toString();
               modelSearch.enqID = jsonArray[i]["enqID"].toString();
-              modelSearch.enqID = jsonArray[i]["enqID"].toString();
+              modelSearch.property_image = jsonArray[i]["property_image"].toString();
+              modelSearch.image = jsonArray[i]["image"].toString();
+              modelSearch.filter_id = jsonArray[i]["filter_id"].toString();
               modelSearch.property_Rid =
                   jsonArray[i]["property_Rid"].toString();
               modelSearch.message = jsonArray[i]["message"].toString();
@@ -426,4 +428,7 @@ class TotalUserList {
   String enqID = "";
   String property_Rid = "";
   String message = "";
+  String property_image = "";
+  String image = "";
+  String filter_id = "";
 }

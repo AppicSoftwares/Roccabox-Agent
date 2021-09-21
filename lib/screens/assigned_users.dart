@@ -48,7 +48,7 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
           return ListTile(
             onTap: () => Navigator.push(
                 context, MaterialPageRoute(builder: (context) => UserDetails(
-                  P_Agency_FilterId: "1",
+                  P_Agency_FilterId: widget.totalUserList[index].filter_id,
                   totalUserList: widget.totalUserList[index],
                 ))),
             leading: CircleAvatar(
@@ -69,7 +69,7 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
                 onTap: () async {
                   SharedPreferences pref = await SharedPreferences.getInstance();
                   var id = pref.getString("id");
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(senderId:id, receiverId: widget.totalUserList[index].userId, name:  widget.totalUserList[index].name)));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(senderId:id, receiverId: widget.totalUserList[index].userId, name:  widget.totalUserList[index].name, image: widget.totalUserList[index].image,)));
                 },
                 child: Icon(Icons.chat, color: Colors.black,size: 24)),
           );

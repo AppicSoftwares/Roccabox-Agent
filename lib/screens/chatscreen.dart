@@ -410,7 +410,8 @@ class _ChatScreenState extends State<ChatScreen> {
           'type': "text",
           'image':widget.image,
           'agent': name,
-          'user':widget.name
+          'user':widget.name,
+          'clicked':"true"
         },
       );
   }).then((value) {
@@ -434,7 +435,8 @@ class _ChatScreenState extends State<ChatScreen> {
             'type': "text",
             'image': image,
             'agent': name,
-            'user': widget.name
+            'user': widget.name,
+            'clicked': "false"
           },
         );
       });
@@ -446,6 +448,24 @@ class _ChatScreenState extends State<ChatScreen> {
     SharedPreferences pref = await SharedPreferences.getInstance();
     name = pref.getString("name");
     image = pref.getString("image");
+
+
+
+
+    var documentReference = FirebaseFirestore.instance
+        .collection('chat_master')
+        .doc("chat_head")
+        .collection(widget.senderId)
+        .doc(widget.receiverId);
+
+    firestoreInstance.runTransaction((transaction) async {
+      transaction.update(
+        documentReference,
+        {
+          'clicked': "true"
+        },
+      );
+    });
   }
 
 }
