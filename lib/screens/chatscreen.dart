@@ -75,9 +75,10 @@ class _ChatScreenState extends State<ChatScreen> {
                   SizedBox(
                     width: 10,
                   ),
-                  CircleAvatar(
-                    backgroundImage: AssetImage('assets/img1.png'),
-                  ),
+                  widget.image==null? CircleAvatar(
+                      backgroundImage: AssetImage('assets/img1.png'),
+                    ):CircleAvatar(backgroundImage: NetworkImage(widget.image.toString() )),
+
                 ],
               ),
               trailing: Row(
@@ -389,6 +390,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void updateChatHead(String s) async {
     print("messageeee "+message+"");
+    print("image "+image+"");
 
     var documentReference = FirebaseFirestore.instance
         .collection('chat_master')
