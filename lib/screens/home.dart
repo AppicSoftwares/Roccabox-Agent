@@ -1,6 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
+import 'package:roccabox_agent/services/APIClient.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 import 'login.dart';
 
 class HomePage extends StatefulWidget {
@@ -12,11 +17,26 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
+  bool isLoading = false;
+
+  String id = "";
+  FirebaseMessaging? auth;
+  var token;
+  final firestoreInstance = FirebaseFirestore.instance;
 
 
+  @override
+  void initState() {
+    
+    super.initState();
+
+    
 
 
+  }
 
+
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,4 +60,8 @@ class _HomePageState extends State<HomePage> {
     Navigator.pushAndRemoveUntil(context,
         MaterialPageRoute(builder: (context) => Login()), (r)=>false);
   }
+
+
+
+
 }

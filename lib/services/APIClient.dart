@@ -12,4 +12,5 @@ class RestDatasource {
   static final GETASSIGNEDUSER_URL = BASE_URL + "getAssignedUser?user_id=";
   static final CHANGEPASSWORD_URL = BASE_URL + "changePassword";
   static final FORGOTPASSWORD_URL = BASE_URL + "forget-password";
+  static final SENDTOKEN_URL = BASE_URL + "updateToken";
 }

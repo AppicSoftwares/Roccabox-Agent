@@ -31,7 +31,8 @@ class _SplashState extends State<Splash> {
       token = value.toString();
 
 
-    });
+    }
+    );
     getLoginStatus();
 
     var initializationSettingsAndroid =
