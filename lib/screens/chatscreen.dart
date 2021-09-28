@@ -1,16 +1,21 @@
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:roccabox_agent/services/constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class ChatScreen extends StatefulWidget {
   var senderId, receiverId, name, image;
-  ChatScreen({Key? key, this.image, this.name, this.receiverId, this.senderId}):super(key: key);
+  ChatScreen({Key? key, this.image, this.name, this.receiverId, this.senderId})
+      : super(key: key);
   @override
   _ChatScreenState createState() => _ChatScreenState();
 }
@@ -22,11 +27,14 @@ class _ChatScreenState extends State<ChatScreen> {
   TextEditingController _textEditingController = new TextEditingController();
   final FocusNode focusNode = FocusNode();
   var message = "";
+  var msg = "";
   int _limit = 20;
   int _limitIncrement = 20;
   var name;
   var image;
-  var msg = "";
+  File? imageFile;
+  String imageUrl = "";
+  bool isLoading = false;
   @override
   void initState() {
     focusNode.addListener(onFocusChange);
@@ -34,7 +42,6 @@ class _ChatScreenState extends State<ChatScreen> {
     getData();
     super.initState();
   }
-
 
   void onFocusChange() {
     if (focusNode.hasFocus) {
@@ -45,7 +52,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   _scrollListener() {
     if (listScrollController.offset >=
-        listScrollController.position.maxScrollExtent &&
+            listScrollController.position.maxScrollExtent &&
         !listScrollController.position.outOfRange) {
       setState(() {
         _limit += _limitIncrement;
@@ -55,7 +62,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
           backgroundColor: Color(0xffFFFFFF),
@@ -80,10 +86,13 @@ class _ChatScreenState extends State<ChatScreen> {
                   SizedBox(
                     width: 10,
                   ),
-                  widget.image==null? CircleAvatar(
-                      backgroundImage: AssetImage('assets/img1.png'),
-                    ):CircleAvatar(backgroundImage: NetworkImage(widget.image.toString() )),
-
+                  widget.image == null
+                      ? CircleAvatar(
+                          backgroundImage: AssetImage('assets/img1.png'),
+                        )
+                      : CircleAvatar(
+                          backgroundImage:
+                              NetworkImage(widget.image.toString())),
                 ],
               ),
               trailing: Row(
@@ -104,7 +113,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 ],
               ),
               title: Text(
-                widget.name==null?"":widget.name,
+                widget.name == null ? "" : widget.name,
                 style: TextStyle(
                     fontSize: 16,
                     color: Color(0xff000000),
@@ -138,72 +147,80 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-
   Widget buildListMessage() {
     return Flexible(
-      child: widget.senderId!=null && widget.receiverId!=null
+      child: widget.senderId != null && widget.receiverId != null
           ? StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('chat_master')
-            .doc("message_list")
-            .collection(widget.senderId+"-"+widget.receiverId)
-            .orderBy('timestamp', descending: true)
-        //.limit(_limit)
-            .snapshots(),
-        builder: (BuildContext context,
-            AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.hasData) {
-            listMessage.clear();
-            listMessage.addAll(snapshot.data!.docs);
-            return chatMessage(listMessage , snapshot.data!.docs);
-            //  return ListView.builder(
-            //    padding: EdgeInsets.all(10.0),
-            //    itemBuilder: (context, index) => buildItem(index, snapshot.data?.docs[index]),
-            //    itemCount: snapshot.data?.docs.length,
-            //    reverse: true,
-            //    controller: listScrollController,
-            //  );
-          } else {
-            return Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.yellow),
-                ));
-
-
-          }
-        },
-      )
+              stream: FirebaseFirestore.instance
+                  .collection('chat_master')
+                  .doc("message_list")
+                  .collection(widget.senderId + "-" + widget.receiverId)
+                  .orderBy('timestamp', descending: true)
+                  //.limit(_limit)
+                  .snapshots(),
+              builder: (BuildContext context,
+                  AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (snapshot.hasData) {
+                  listMessage.clear();
+                  listMessage.addAll(snapshot.data!.docs);
+                  return chatMessage(listMessage, snapshot.data!.docs);
+                  //  return ListView.builder(
+                  //    padding: EdgeInsets.all(10.0),
+                  //    itemBuilder: (context, index) => buildItem(index, snapshot.data?.docs[index]),
+                  //    itemCount: snapshot.data?.docs.length,
+                  //    reverse: true,
+                  //    controller: listScrollController,
+                  //  );
+                } else {
+                  return Center(
+                      child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.yellow),
+                  ));
+                }
+              },
+            )
           : Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.yellow),
-        ),
-      ),
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.yellow),
+              ),
+            ),
     );
   }
 
-
-
-
-  Widget chatMessage(List<QueryDocumentSnapshot<Object?>> listMessage, List<QueryDocumentSnapshot<Object?>> docs) {
-    print("SizeofList "+listMessage.length.toString()+"");
+  Widget chatMessage(List<QueryDocumentSnapshot<Object?>> listMessage,
+      List<QueryDocumentSnapshot<Object?>> docs) {
+    print("SizeofList " + listMessage.length.toString() + "");
     return ListView.builder(
-      itemCount:listMessage.length ,
+      itemCount: listMessage.length,
       reverse: true,
       itemBuilder: (BuildContext context, int index) {
         return Padding(
           padding: const EdgeInsets.all(10.0),
           child: Column(
-            crossAxisAlignment: docs[index].get("idFrom").toString()==widget.senderId?CrossAxisAlignment.end:CrossAxisAlignment.start,
+            crossAxisAlignment:
+                docs[index].get("idFrom").toString() == widget.senderId
+                    ? CrossAxisAlignment.end
+                    : CrossAxisAlignment.start,
             children: [
               Material(
-                  borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30.0),bottomRight: Radius.circular(30.0),
-                      topLeft: docs[index].get("idFrom").toString()==widget.senderId?Radius.circular(30.0):Radius.circular(0.0),
-                      topRight: docs[index].get("idFrom").toString()==widget.senderId?Radius.circular(0):Radius.circular(30.0)),
+                  borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(30.0),
+                      bottomRight: Radius.circular(30.0),
+                      topLeft: docs[index].get("idFrom").toString() ==
+                              widget.senderId
+                          ? Radius.circular(30.0)
+                          : Radius.circular(0.0),
+                      topRight: docs[index].get("idFrom").toString() ==
+                              widget.senderId
+                          ? Radius.circular(0)
+                          : Radius.circular(30.0)),
                   elevation: 5.0,
-                  color: docs[index].get("idFrom").toString()!=widget.senderId?Colors.blueAccent: Color(0xffFFBA00),
+                  color: docs[index].get("idFrom").toString() != widget.senderId
+                      ? Colors.blueAccent
+                      : Color(0xffFFBA00),
                   child: Padding(
                     padding:
-                    EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+                        EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
                     child: Text(
                       docs[index].get("content"),
                       style: TextStyle(color: Colors.white, fontSize: 15),
@@ -234,158 +251,184 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-
   Widget buildInput() {
     return Container(
       margin: EdgeInsets.only(right: 15),
-      child: Row(
-        children: <Widget>[
-          // Button send image
-          // Material(
-          //   child: Container(
-          //     margin: EdgeInsets.symmetric(horizontal: 1.0),
-          //     child: IconButton(
-          //       icon: Icon(Icons.image),
-          //       onPressed: (){},
-          //       color: kPrimaryColor,
-          //     ),
-          //   ),
-          //   color: Colors.white,
-          // ),
-          // Material(
-          //   child: Container(
-          //     margin: EdgeInsets.symmetric(horizontal: 1.0),
-          //     child: IconButton(
-          //       icon: Icon(Icons.face),
-          //       onPressed: (){},
-          //       color: kPrimaryColor,
-          //     ),
-          //   ),
-          //   color: Colors.white,
-          // ),
+      child: Column(
+        children: [
+          Container(
+            height: 1,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.grey,
+              borderRadius: BorderRadius.circular(5),
+            ),
+          ),
+          Row(
+            children: <Widget>[
+              // Button send image
+              // Material(
+              //   child: Container(
+              //     margin: EdgeInsets.symmetric(horizontal: 1.0),
+              //     child: IconButton(
+              //       icon: Icon(Icons.image),
+              //       onPressed: (){},
+              //       color: kPrimaryColor,
+              //     ),
+              //   ),
+              //   color: Colors.white,
+              // ),
+              // Material(
+              //   child: Container(
+              //     margin: EdgeInsets.symmetric(horizontal: 1.0),
+              //     child: IconButton(
+              //       icon: Icon(Icons.face),
+              //       onPressed: (){},
+              //       color: kPrimaryColor,
+              //     ),
+              //   ),
+              //   color: Colors.white,
+              // ),
 
-          // Edit text
-          Flexible(
-            child: Container(
-              margin: EdgeInsets.all(10.0),
-              child: TextField(
-                onSubmitted: (value) {},
-                style: TextStyle(color: Colors.black, fontSize: 15.0),
-                controller: _textEditingController,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: 'Type your message...',
-                  hintStyle: TextStyle(color: Colors.grey),
+              // Edit text
+              Flexible(
+                child: Container(
+                  margin: EdgeInsets.all(10.0),
+                  child: TextField(
+                    onSubmitted: (value) {},
+                    style: TextStyle(color: Colors.black, fontSize: 15.0),
+                    controller: _textEditingController,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Type your message...',
+                      hintStyle: TextStyle(color: Colors.grey),
+                      suffixIcon: Padding(
+                        padding: const EdgeInsets.only(right: 20),
+                        child: InkWell(
+                          onTap: getImage,
+                          child: SvgPicture.asset(
+                            "assets/attachment.svg",
+                            width: 5,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
+                    ),
+                    focusNode: focusNode,
+                  ),
                 ),
-                focusNode: focusNode,
               ),
-            ),
-          ),
 
-          InkWell(
-            borderRadius: BorderRadius.circular(100),
-            onTap: () {
-
-            },
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  height: 46,
-                  width: 46,
-                  decoration: BoxDecoration(
-                    color: kSecondaryColor.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: Icon(Icons.send),
-                    onPressed: () {
-                      if( _textEditingController.text
-                          .toString()
-                          .trim()
-                          .isNotEmpty) {
-                        message = _textEditingController.text.toString().trim();
-                        msg = _textEditingController.text.toString().trim();
-                        print("SenderId "+widget.senderId+"");
-                        print("Id "+widget.receiverId+"");
-                        var documentReference = FirebaseFirestore.instance
-                            .collection('chat_master')
-                            .doc("message_list")
-                            .collection(widget.senderId+"-"+widget.receiverId)
-                            .doc(DateTime.now()
-                            .millisecondsSinceEpoch
-                            .toString());
-
-                        firestoreInstance.runTransaction((transaction) async {
-                          transaction.set(
-                            documentReference,
-                            {
-                              'idFrom': widget.senderId,
-                              'idTo': widget.receiverId,
-                              'timestamp': DateTime.now()
-                                  .millisecondsSinceEpoch
-                                  .toString(),
-                              'content':
-                              _textEditingController.text.toString().trim(),
-                              'type': "text"
-                            },
-                          );
-                        }).then((value){
-                          var s =_textEditingController.text.toString();
-                          print("TextEdit "+_textEditingController.text.toString());
-                          var documentReference = FirebaseFirestore.instance
-                              .collection('chat_master')
-                              .doc("message_list")
-                              .collection(widget.receiverId+"-"+widget.senderId)
-                              .doc(DateTime.now()
-                              .millisecondsSinceEpoch
-                              .toString());
-
-                          firestoreInstance.runTransaction((transaction) async {
-                            transaction.set(
-                              documentReference,
-                              {
-                                'idFrom': widget.senderId,
-                                'idTo': widget.receiverId,
-                                'timestamp': DateTime.now()
+              InkWell(
+                borderRadius: BorderRadius.circular(100),
+                onTap: () {},
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      height: 46,
+                      width: 46,
+                      decoration: BoxDecoration(
+                        color: kSecondaryColor.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: Icon(Icons.send),
+                        onPressed: () {
+                          if (_textEditingController.text
+                              .toString()
+                              .trim()
+                              .isNotEmpty) {
+                            message =
+                                _textEditingController.text.toString().trim();
+                            print("SenderId " + widget.senderId + "");
+                            print("Id " + widget.receiverId + "");
+                            var documentReference = FirebaseFirestore.instance
+                                .collection('chat_master')
+                                .doc("message_list")
+                                .collection(
+                                    widget.senderId + "-" + widget.receiverId)
+                                .doc(DateTime.now()
                                     .millisecondsSinceEpoch
-                                    .toString(),
-                                'content':s.toString(),
-                                'type': "text"
-                              },
-                            );
-                          });
+                                    .toString());
 
-                          updateChatHead(s.toString());
+                            firestoreInstance
+                                .runTransaction((transaction) async {
+                              transaction.set(
+                                documentReference,
+                                {
+                                  'idFrom': widget.senderId,
+                                  'idTo': widget.receiverId,
+                                  'timestamp': DateTime.now()
+                                      .millisecondsSinceEpoch
+                                      .toString(),
+                                  'content': _textEditingController.text
+                                      .toString()
+                                      .trim(),
+                                  'type': "text"
+                                },
+                              );
+                            }).then((value) {
+                              var s = _textEditingController.text.toString();
+                              print("TextEdit " +
+                                  _textEditingController.text.toString());
+                              var documentReference = FirebaseFirestore.instance
+                                  .collection('chat_master')
+                                  .doc("message_list")
+                                  .collection(
+                                      widget.receiverId + "-" + widget.senderId)
+                                  .doc(DateTime.now()
+                                      .millisecondsSinceEpoch
+                                      .toString());
 
-                          _textEditingController.clear();
-                          focusNode.unfocus();
-                        });
-                        listScrollController.animateTo(0.0,
-                            duration: Duration(milliseconds: 300),
-                            curve: Curves.easeOut);
-                      }
+                              firestoreInstance
+                                  .runTransaction((transaction) async {
+                                transaction.set(
+                                  documentReference,
+                                  {
+                                    'idFrom': widget.senderId,
+                                    'idTo': widget.receiverId,
+                                    'timestamp': DateTime.now()
+                                        .millisecondsSinceEpoch
+                                        .toString(),
+                                    'content': s.toString(),
+                                    'type': "text"
+                                  },
+                                );
+                              });
 
-                      sendNotification();
-                    },
-                    color: Color(0xffFFBA00),
-                  ),
+                              updateChatHead(s.toString());
+
+                              _textEditingController.clear();
+                              focusNode.unfocus();
+                            });
+                            listScrollController.animateTo(0.0,
+                                duration: Duration(milliseconds: 300),
+                                curve: Curves.easeOut);
+                          }
+
+                          sendNotification();
+                        },
+                        color: Color(0xffFFBA00),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+
+              //  Material(
+              //     child: IconButton(
+
+              //       icon: Icon(Icons.send),
+              //       onPressed: (){},
+              //       color: Colors.yellow[600],
+              //     ),
+              //     color: Colors.white,
+              // ),
+
+              // Button send message
+            ],
           ),
-
-          //  Material(
-          //     child: IconButton(
-
-          //       icon: Icon(Icons.send),
-          //       onPressed: (){},
-          //       color: Colors.yellow[600],
-          //     ),
-          //     color: Colors.white,
-          // ),
-
-          // Button send message
         ],
       ),
       width: double.infinity,
@@ -395,8 +438,163 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void updateChatHead(String s) async {
-    print("messageeee "+message+"");
-    print("image "+image+"");
+    print("messageeee " + message + "");
+    print("image " + image + "");
+
+    var documentReference = FirebaseFirestore.instance
+        .collection('chat_master')
+        .doc("chat_head")
+        .collection(widget.senderId)
+        .doc(widget.receiverId);
+    print("s " + s + "");
+
+    firestoreInstance.runTransaction((transaction) async {
+      transaction.set(
+        documentReference,
+        {
+          'idFrom': widget.senderId,
+          'idTo': widget.receiverId,
+          'msg': s.toString(),
+          'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
+          'type': "text",
+          'image': widget.image,
+          'agent': name,
+          'user': widget.name,
+          'clicked': "true"
+        },
+      );
+    }).then((value) {
+      var documentReference = FirebaseFirestore.instance
+          .collection('chat_master')
+          .doc("chat_head")
+          .collection(widget.receiverId)
+          .doc(widget.senderId);
+
+      firestoreInstance.runTransaction((transaction) async {
+        transaction.set(
+          documentReference,
+          {
+            'idFrom': widget.senderId,
+            'idTo': widget.receiverId,
+            'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
+            'msg': s.toString(),
+            'type': "text",
+            'image': image,
+            'agent': name,
+            'user': widget.name,
+            'clicked': "false"
+          },
+        );
+      });
+    });
+    message = "";
+  }
+
+  void getData() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    name = pref.getString("name");
+    image = pref.getString("image");
+
+    var documentReference = FirebaseFirestore.instance
+        .collection('chat_master')
+        .doc("chat_head")
+        .collection(widget.senderId)
+        .doc(widget.receiverId);
+
+    firestoreInstance.runTransaction((transaction) async {
+      transaction.update(
+        documentReference,
+        {'clicked': "true"},
+      );
+    });
+  }
+
+  Future getImage() async {
+    ImagePicker imagePicker = ImagePicker();
+    PickedFile? pickedFile;
+
+    pickedFile = await imagePicker.getImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      imageFile = File(pickedFile.path.toString());
+      if (imageFile != null) {
+        setState(() {
+          isLoading = true;
+        });
+        uploadFile();
+      }
+    }
+  }
+
+  Future uploadFile() async {
+    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+    //  Reference reference = FirebaseStorage.instance.ref().child("images/");
+    //  UploadTask uploadTask = reference.putFile(imageFile!);
+
+    Reference firebaseStorageRef =
+        FirebaseStorage.instance.ref().child('uploads/$fileName');
+    UploadTask uploadTaskk = firebaseStorageRef.putFile(imageFile!);
+    try {
+      TaskSnapshot snapshot = await uploadTaskk;
+      imageUrl = await snapshot.ref.getDownloadURL();
+      setState(() {
+        isLoading = false;
+        onSendMessage(imageUrl, 1);
+      });
+    } on FirebaseException catch (e) {
+      print(e.toString());
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  onSendMessage(String content, int type) {
+    var documentReference = FirebaseFirestore.instance
+        .collection('chat_master')
+        .doc("message_list")
+        .collection(widget.senderId + "-" + widget.receiverId)
+        .doc(DateTime.now().millisecondsSinceEpoch.toString());
+
+    firestoreInstance.runTransaction((transaction) async {
+      transaction.set(
+        documentReference,
+        {
+          'idFrom': widget.senderId,
+          'idTo': widget.receiverId,
+          'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
+          'content': content,
+          'type': "image"
+        },
+      );
+    }).then((value) {
+      var documentReference = FirebaseFirestore.instance
+          .collection('chat_master')
+          .doc("message_list")
+          .collection(widget.receiverId + "-" + widget.senderId)
+          .doc(DateTime.now().millisecondsSinceEpoch.toString());
+
+      firestoreInstance.runTransaction((transaction) async {
+        transaction.set(
+          documentReference,
+          {
+            'idFrom': widget.senderId,
+            'idTo': widget.receiverId,
+            'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
+            'content': content,
+            'type': "image"
+          },
+        );
+      });
+
+      updateChatHead2(content);
+
+      _textEditingController.clear();
+      focusNode.unfocus();
+    });
+    listScrollController.animateTo(0.0,
+        duration: Duration(milliseconds: 300), curve: Curves.easeOut);
+  }
+  void updateChatHead2(String s) async {
 
     var documentReference = FirebaseFirestore.instance
         .collection('chat_master')
@@ -415,11 +613,11 @@ class _ChatScreenState extends State<ChatScreen> {
           'timestamp': DateTime.now()
               .millisecondsSinceEpoch
               .toString(),
-          'type': "text",
+          'type': "image",
           'image':widget.image,
           'agent': name,
           'user':widget.name,
-          'clicked':"true"
+          'clicked': "true"
         },
       );
   }).then((value) {
@@ -440,7 +638,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 .millisecondsSinceEpoch
                 .toString(),
             'msg': s.toString(),
-            'type': "text",
+            'type': "image",
             'image': image,
             'agent': name,
             'user': widget.name,
@@ -452,29 +650,7 @@ class _ChatScreenState extends State<ChatScreen> {
     message = "";
   }
 
-  void getData() async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    name = pref.getString("name");
-    image = pref.getString("image");
 
-
-
-
-    var documentReference = FirebaseFirestore.instance
-        .collection('chat_master')
-        .doc("chat_head")
-        .collection(widget.senderId)
-        .doc(widget.receiverId);
-
-    firestoreInstance.runTransaction((transaction) async {
-      transaction.update(
-        documentReference,
-        {
-          'clicked': "true"
-        },
-      );
-    });
-  }
 
 
   Future sendNotification() async {
@@ -529,6 +705,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     msg= "";
   }
+
 
 
 }
