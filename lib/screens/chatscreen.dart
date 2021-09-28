@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -13,8 +14,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class ChatScreen extends StatefulWidget {
-  var senderId, receiverId, name, image;
-  ChatScreen({Key? key, this.image, this.name, this.receiverId, this.senderId})
+  var senderId, receiverId, name, fcmToken, image;
+  ChatScreen({Key? key, this.image, this.name, this.receiverId, this.senderId, this.fcmToken})
       : super(key: key);
   @override
   _ChatScreenState createState() => _ChatScreenState();
@@ -30,15 +31,27 @@ class _ChatScreenState extends State<ChatScreen> {
   var msg = "";
   int _limit = 20;
   int _limitIncrement = 20;
+  
   var name;
   var image;
   File? imageFile;
   String imageUrl = "";
   bool isLoading = false;
+  FirebaseMessaging? auth;
+  var token;
   @override
   void initState() {
     focusNode.addListener(onFocusChange);
     listScrollController.addListener(_scrollListener);
+    auth = FirebaseMessaging.instance;
+    auth?.getToken().then((value){
+      print("FirebaseTokenHome "+value.toString());
+      token = value.toString();
+
+      
+
+    }
+    );
     getData();
     super.initState();
   }
@@ -339,8 +352,8 @@ class _ChatScreenState extends State<ChatScreen> {
                               .toString()
                               .trim()
                               .isNotEmpty) {
-                            message =
-                                _textEditingController.text.toString().trim();
+                            message = _textEditingController.text.toString().trim();
+                            msg = _textEditingController.text.toString().trim();
                             print("SenderId " + widget.senderId + "");
                             print("Id " + widget.receiverId + "");
                             var documentReference = FirebaseFirestore.instance
@@ -460,7 +473,9 @@ class _ChatScreenState extends State<ChatScreen> {
           'image': widget.image,
           'agent': name,
           'user': widget.name,
-          'clicked': "true"
+          'clicked': "true",
+          'fcmToken': widget.fcmToken
+
         },
       );
     }).then((value) {
@@ -482,7 +497,8 @@ class _ChatScreenState extends State<ChatScreen> {
             'image': image,
             'agent': name,
             'user': widget.name,
-            'clicked': "false"
+            'clicked': "false",
+            'fcmToken': token
           },
         );
       });
@@ -688,7 +704,7 @@ class _ChatScreenState extends State<ChatScreen> {
               'status': 'done',
               "screen": "OPEN_NOTIFICATION",
             },
-            'to':'c5uZ5jc0TBOp6CfaMfmjTq:APA91bElx-DFQyUiKMARntPEcx1eZ8vf1ZJrclkcijbDpzmy-DfAnYvK6N8zNU4sJ8qDCxIlmOMUtOO5gHnL8nbA1943aKCE5K2gno1ZhvldMaJpmXmWDkck5A9KzjwYqwJwcsZlvzB7'
+            'to': widget.fcmToken
           },
         ),
         encoding: Encoding.getByName('utf-8'),

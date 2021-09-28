@@ -65,6 +65,7 @@ class _ChatState extends State<Chat> {
                 model.image = json["image"].toString();
                 model.message = json["msg"].toString();
                 model.clicked = json["clicked"].toString();
+                model.fcmToken = json["fcmToken"].toString();
 
               listUser.add(model);
             });
@@ -85,7 +86,7 @@ class _ChatState extends State<Chat> {
                         ChatScreen(name: listUser[index].name,
                           image: listUser[index].image,
                           receiverId: listUser[index].id,
-                          senderId: id,))),
+                          senderId: id,fcmToken: listUser[index].fcmToken,))),
                 leading:listUser[index].image==null? CircleAvatar(
                   backgroundImage: AssetImage('assets/img1.png'),
                 ):CircleAvatar(backgroundImage: NetworkImage(listUser[index].image.toString() )),
@@ -162,6 +163,7 @@ class UserList{
   String? image;
   String? message;
   String? clicked;
+  String? fcmToken;
 }
 
 
