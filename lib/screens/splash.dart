@@ -34,13 +34,8 @@ class _SplashState extends State<Splash> {
     });
     getLoginStatus();
 
-
-
-
-    // Notification Process start..............
-
     var initializationSettingsAndroid =
-    new AndroidInitializationSettings('@mipmap/launcher_icon');
+    new AndroidInitializationSettings('@mipmap/ic_launcher');
     final IOSInitializationSettings initializationSettingsIOS =
     IOSInitializationSettings(
         onDidReceiveLocalNotification: onDidReceiveLocalNotification);
@@ -51,26 +46,59 @@ class _SplashState extends State<Splash> {
 
     //fetchLocation();
     FirebaseMessaging.onMessage.listen((RemoteMessage message){
-      RemoteNotification? notification  = message.notification;
-      AndroidNotification? android = message.notification?.android;
+      print('Running On Message');
+      Map<String, dynamic>map;
+      if(message.notification==null){
+        if(message.data!=null){
 
-      if(notification!=null && android != null){
-        createList(notification);
-        flutterLocalNotificationsPlugin.show(
-            notification.hashCode,
-            notification.title,
-            notification.body,
-            NotificationDetails(
-                android: AndroidNotificationDetails(
-                  channel.id,
-                  channel.name,
-                  channel.description,
-                  color: Colors.blue,
-                  playSound: true,
-                  icon: '@mipmap/launcher_icon',
-                  largeIcon: DrawableResourceAndroidBitmap('@mipmap/launcher_icon'),
-                )
-            ));
+          map = message.data;
+
+          print("Message "+map["title"]);
+          createListMap(map);
+          flutterLocalNotificationsPlugin.show(
+              message.hashCode,
+              map["title"].toString(),
+              map["body"].toString(),
+              NotificationDetails(
+                  android: AndroidNotificationDetails(
+                    channel.id,
+                    channel.name,
+                    channel.description,
+                    color: Colors.blue,
+                    playSound: true,
+                    icon: '@mipmap/ic_launcher',
+                    largeIcon: DrawableResourceAndroidBitmap(
+                        '@mipmap/ic_launcher'),
+                  )
+              ));
+
+        }
+
+
+      }else {
+        RemoteNotification? notification  = message.notification;
+
+        AndroidNotification? android = message.notification?.android;
+
+        if (notification != null && android != null) {
+          createList(notification);
+          flutterLocalNotificationsPlugin.show(
+              notification.hashCode,
+              notification.title,
+              notification.body,
+              NotificationDetails(
+                  android: AndroidNotificationDetails(
+                    channel.id,
+                    channel.name,
+                    channel.description,
+                    color: Colors.blue,
+                    playSound: true,
+                    icon: '@mipmap/ic_launcher',
+                    largeIcon: DrawableResourceAndroidBitmap(
+                        '@mipmap/ic_launcher'),
+                  )
+              ));
+        }
       }
     });
 
@@ -99,21 +127,26 @@ class _SplashState extends State<Splash> {
           );
 
         });*/
+      }else if(message.data!=null){
+        Map<String, dynamic> map = message.data;
+        createListMap(map);
       }
 
     });
 
+
     super.initState();
   }
 
+
+
+
   Future selectNotification(String? payload) async {
-    if (payload != null) {
+/*    if (payload != null) {
       debugPrint('notification payload: $payload');
-    }
-    await Navigator.push(
-      context,
-      MaterialPageRoute<void>(builder: (context) => Notifications()),
-    );
+    }*/
+    navigatorKey.currentState!.pushNamed('/notification');
+
   }
   Future onDidReceiveLocalNotification(
       int? id, String? title, String? body, String? payload) async {
@@ -212,8 +245,35 @@ class _SplashState extends State<Splash> {
       preferences.setStringList("bodyList", bodyListNew);
       preferences.commit();
     }
-    Navigator.pushReplacement(context,
-        MaterialPageRoute(builder: (BuildContext context) => Notifications()));
+    navigatorKey.currentState!.pushNamed('/notification');
+
+  }
+
+
+  Future<void> createListMap(Map<String, dynamic> map) async {
+    print("ListSave");
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    List<String>? titleList = preferences.getStringList('titleList');
+    List<String>? bodyList = preferences.getStringList('bodyList');
+    // List<String> timeList = preferences.getStringList('timeList');
+    if(titleList!=null && bodyList!=null){
+      titleList.add(map["title"].toString());
+      bodyList.add(map["body"].toString());
+      preferences.setStringList("titleList", titleList);
+      preferences.setStringList("bodyList", bodyList);
+      //  preferences.setStringList("timeList", timeList);
+      preferences.commit();
+    }else{
+      List<String> titleListNew = [];
+      List<String> bodyListNew = [];
+
+      titleListNew.add(map["title"].toString());
+      bodyListNew.add(map["body"].toString());
+
+      preferences.setStringList("titleList", titleListNew);
+      preferences.setStringList("bodyList", bodyListNew);
+      preferences.commit();
+    }
 
   }
 }

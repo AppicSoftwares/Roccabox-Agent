@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:roccabox_agent/screens/holidayrent.dart';
 import 'package:roccabox_agent/util/languagecheck.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../main.dart';
 
@@ -13,6 +14,9 @@ class Notifications extends StatefulWidget {
 
 class _NotificationsState extends State<Notifications> {
   
+
+
+
 
   List names = [
     'Rajveer Place',
@@ -29,6 +33,16 @@ class _NotificationsState extends State<Notifications> {
     'Calibration Place',
     'Special Place',
   ];
+
+
+
+  List<String> titleList = [];
+  List<String> bodyList = [];
+  @override
+  void initState() {
+    getData();
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     LanguageChange languageChange = new LanguageChange();
@@ -48,7 +62,7 @@ class _NotificationsState extends State<Notifications> {
         ),
       ),
       body: ListView.separated(
-        itemCount: names.length,
+        itemCount: titleList.length,
         separatorBuilder: (BuildContext context, int index) {
           return Divider(
             height: 0,
@@ -65,24 +79,34 @@ class _NotificationsState extends State<Notifications> {
                   Colors.primaries[Random().nextInt(Colors.primaries.length)],
               // backgroundImage: AssetImage('assets/img1.png'),
               child: Text(
-                names.elementAt(index).toString().substring(0, 1),
+                titleList.elementAt(index).toString().substring(0, 1),
                 style: TextStyle(fontSize: 22, color: Colors.black),
               ),
             ),
             title: Text(
-              names.elementAt(index),
+              titleList.elementAt(index),
               style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                   color: Color(0xff000000)),
             ),
-            subtitle: Text(
-              'Hi! We have assigned you  a new agent for your previous enquiry. They will message you shortly',
+            subtitle: Text(bodyList[index],
               style: TextStyle(fontSize: 12, color: Color(0xff818181)),
             ),
           );
         },
       ),
     );
+  }
+
+
+  Future<void> getData() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    titleList = preferences.getStringList("titleList")!;
+    bodyList = preferences.getStringList("bodyList")!;
+    setState(() {
+      titleList = titleList.reversed.toList();
+      bodyList = bodyList.reversed.toList();
+    });
   }
 }

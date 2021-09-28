@@ -1,8 +1,12 @@
+import 'dart:collection';
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:roccabox_agent/services/constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class ChatScreen extends StatefulWidget {
   var senderId, receiverId, name, image;
@@ -22,6 +26,7 @@ class _ChatScreenState extends State<ChatScreen> {
   int _limitIncrement = 20;
   var name;
   var image;
+  var msg = "";
   @override
   void initState() {
     focusNode.addListener(onFocusChange);
@@ -299,9 +304,8 @@ class _ChatScreenState extends State<ChatScreen> {
                           .toString()
                           .trim()
                           .isNotEmpty) {
-                        message = _textEditingController.text
-                            .toString()
-                            .trim();
+                        message = _textEditingController.text.toString().trim();
+                        msg = _textEditingController.text.toString().trim();
                         print("SenderId "+widget.senderId+"");
                         print("Id "+widget.receiverId+"");
                         var documentReference = FirebaseFirestore.instance
@@ -361,6 +365,8 @@ class _ChatScreenState extends State<ChatScreen> {
                             duration: Duration(milliseconds: 300),
                             curve: Curves.easeOut);
                       }
+
+                      sendNotification();
                     },
                     color: Color(0xffFFBA00),
                   ),
@@ -469,6 +475,61 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     });
   }
+
+
+  Future sendNotification() async {
+    Map<String, String> map  = new HashMap();
+    map["Authorization"] = "key=AAAAtgmz2LM:APA91bHyV1VbnfG-dRXDo1cgzQDkYll-0ZRdKbeTL4Hv0hbFilEiTPLHHXkA_teNx-z9xNBqkM2a54TwJ75-mPQjCsBVlzKyuSYPc3oJHMCpFBqlSPWrClV96h5xuVQsGBEu8yVzlZdn";
+    map["content-type"] = "application/json";
+    var jsonRes;
+    var dataJson ;
+/*    Obj obj = new Obj();
+    obj.title = "Hello";
+    obj.body = "This is body";
+    obj.time = "11:58 PM";
+    print("sdasda "+obj.toJson().toString());*/
+    /* var response =
+    await http.post(Uri.parse("https://fcm.googleapis.com/fcm/send"),body: {
+      "to":"c5uZ5jc0TBOp6CfaMfmjTq:APA91bElx-DFQyUiKMARntPEcx1eZ8vf1ZJrclkcijbDpzmy-DfAnYvK6N8zNU4sJ8qDCxIlmOMUtOO5gHnL8nbA1943aKCE5K2gno1ZhvldMaJpmXmWDkck5A9KzjwYqwJwcsZlvzB7",
+      "priority":"",
+      "data":obj.toJson(),
+    },
+    headers: map);*/
+
+
+    final response = await http.post(Uri.parse("https://fcm.googleapis.com/fcm/send"),
+        body: jsonEncode(
+          <String, dynamic>{
+            'notification': <String, dynamic>{
+              'body': msg.toString(),
+              'title': name
+            },
+            'priority': 'high',
+            'data': <String, dynamic>{
+              'click_action':
+              'FLUTTER_NOTIFICATION_CLICK',
+              'id': '1',
+              'status': 'done',
+              "screen": "OPEN_NOTIFICATION",
+            },
+            'to':'c5uZ5jc0TBOp6CfaMfmjTq:APA91bElx-DFQyUiKMARntPEcx1eZ8vf1ZJrclkcijbDpzmy-DfAnYvK6N8zNU4sJ8qDCxIlmOMUtOO5gHnL8nbA1943aKCE5K2gno1ZhvldMaJpmXmWDkck5A9KzjwYqwJwcsZlvzB7'
+          },
+        ),
+        encoding: Encoding.getByName('utf-8'),
+        headers: map);
+
+
+    if (response.statusCode == 200) {
+
+      var apiObj = JsonDecoder().convert(response.body.toString());
+      print(apiObj.toString()+"^^");
+    } else {
+      throw Exception('Failed to load album');
+    }
+
+    msg= "";
+  }
+
 
 }
 
