@@ -13,21 +13,21 @@ import 'dart:convert';
 import 'Setting.dart';
 import 'notifications.dart';
 
-class HomeNav extends StatefulWidget {
+class NotificationIndex extends StatefulWidget {
 
   
   @override
   _HomeNavState createState() => _HomeNavState();
 }
 
-class _HomeNavState extends State<HomeNav> {
-  int _index = 0;
+class _HomeNavState extends State<NotificationIndex> {
+  int _index = 2;
   List widgets = <Widget>[Chat(), Call(), Notifications(), Profile()];
 FirebaseMessaging? auth;
   var token;
     LanguageChange languageChange = new LanguageChange();
 
-GlobalKey globalKey = new GlobalKey(debugLabel: 'btm_app_bar');
+
     @override
   void initState() {
    
@@ -45,15 +45,12 @@ GlobalKey globalKey = new GlobalKey(debugLabel: 'btm_app_bar');
     }
     );
 
-    getNotify();
-
   }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: widgets.elementAt(_index),
       bottomNavigationBar: BottomNavigationBar(
-        key: globalKey,
           currentIndex: _index,
           type: BottomNavigationBarType.fixed,
           // showSelectedLabels: true,
@@ -110,8 +107,7 @@ GlobalKey globalKey = new GlobalKey(debugLabel: 'btm_app_bar');
     SharedPreferences pref = await SharedPreferences.getInstance();
     var id = pref.getString("id").toString();
     var email = pref.getString("email").toString();
-      final BottomNavigationBar? navigationBar = globalKey.currentWidget as BottomNavigationBar?;
-    navigationBar!.onTap!(1);
+      
   }
 
 
@@ -151,27 +147,6 @@ GlobalKey globalKey = new GlobalKey(debugLabel: 'btm_app_bar');
     } else {
 
     }
-  }
-
-    void getNotify() async{
-   notificationCount = 0;
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    var isRead = preferences.getStringList("isRead");
-    print("IsRead " + isRead.toString());
-    if (isRead != null) {
-      if (isRead.isNotEmpty) {
-        for (var k = 0; k < isRead.length; k++) {
-          print("element " + isRead[k].toString());
-          if (isRead[k] == "false") {
-            notificationCount++;
-          }
-        }
-      }
-    }
-    print("counthome " + notificationCount.toString());
-    preferences.setString("notify",notificationCount.toString());
-    preferences.commit();
-    setState(() {});
   }
 
 }

@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:roccabox_agent/screens/chatscreen.dart';
+import 'package:roccabox_agent/screens/notificationindex.dart';
+import 'package:roccabox_agent/screens/notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Chat extends StatefulWidget {
@@ -14,6 +17,7 @@ class _ChatState extends State<Chat> {
   List<QueryDocumentSnapshot> listUsers = new List.from([]);
   final firestoreInstance = FirebaseFirestore.instance;
   List<UserList> listUser = [];
+  String notiCount = "";
   var id;
   @override
   void initState() {
@@ -41,6 +45,66 @@ class _ChatState extends State<Chat> {
               color: Color(0xff000000),
               fontWeight: FontWeight.w600),
         ),
+
+        actions: [
+          Padding(
+                padding: EdgeInsets.only(right: 10, top: 5),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(100),
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => NotificationIndex()));
+                  },
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(12),
+                        height: 46,
+                        width: 46,
+                        decoration: BoxDecoration(
+                          color: Color(0xFF979797).withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: SvgPicture.asset(
+                          "assets/Bell.svg",
+                          color: Colors.black54,
+                        ),
+                      ),
+                      Visibility(
+                        visible: notiCount=="0"?false:true,
+                        child: Positioned(
+                          top: -3,
+                          right: 0,
+                          child: Container(
+                            height: 16,
+                            width: 16,
+                            decoration: BoxDecoration(
+                              color: Color(0xFFFF4848),
+                              shape: BoxShape.circle,
+                              border: Border.all(width: 1.5, color: Colors.white),
+                            ),
+                            child: Center(
+                              child: Text(
+                                notiCount,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  height: 1,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+        ],
       ),
       body: id!=null?StreamBuilder<QuerySnapshot>(
         stream: firestoreInstance
@@ -116,6 +180,7 @@ class _ChatState extends State<Chat> {
   void getData() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     id = pref.getString("id");
+    notiCount = pref.getString("notify")!;
     setState(() {
 
     });

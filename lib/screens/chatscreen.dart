@@ -415,9 +415,9 @@ class _ChatScreenState extends State<ChatScreen> {
                               _textEditingController.clear();
                               focusNode.unfocus();
                             });
-                            listScrollController.animateTo(0.0,
-                                duration: Duration(milliseconds: 300),
-                                curve: Curves.easeOut);
+                            // listScrollController.animateTo(0.0,
+                            //     duration: Duration(milliseconds: 300),
+                            //     curve: Curves.easeOut);
                           }
 
                           sendNotification();
@@ -452,8 +452,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void updateChatHead(String s) async {
     print("messageeee " + message + "");
-    print("image " + image + "");
-
+ print("mytoken " + token + "");
     var documentReference = FirebaseFirestore.instance
         .collection('chat_master')
         .doc("chat_head")
@@ -633,7 +632,8 @@ class _ChatScreenState extends State<ChatScreen> {
           'image':widget.image,
           'agent': name,
           'user':widget.name,
-          'clicked': "true"
+          'clicked': "true",
+           'fcmToken': widget.fcmToken
         },
       );
   }).then((value) {
@@ -658,7 +658,8 @@ class _ChatScreenState extends State<ChatScreen> {
             'image': image,
             'agent': name,
             'user': widget.name,
-            'clicked': "false"
+            'clicked': "false",
+             'fcmToken': token
           },
         );
       });

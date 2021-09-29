@@ -35,111 +35,11 @@ class _SplashState extends State<Splash> {
     );
     getLoginStatus();
 
-    var initializationSettingsAndroid =
-    new AndroidInitializationSettings('@mipmap/ic_launcher');
-    final IOSInitializationSettings initializationSettingsIOS =
-    IOSInitializationSettings(
-        onDidReceiveLocalNotification: onDidReceiveLocalNotification);
-    final InitializationSettings initializationSettings = InitializationSettings(
-        iOS: initializationSettingsIOS, android: initializationSettingsAndroid);
-    flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: selectNotification);
-
-    //fetchLocation();
-    FirebaseMessaging.onMessage.listen((RemoteMessage message){
-      print('Running On Message');
-      Map<String, dynamic>map;
-      if(message.notification==null){
-        if(message.data!=null){
-
-          map = message.data;
-
-          print("Message "+map["title"]);
-          createListMap(map);
-          flutterLocalNotificationsPlugin.show(
-              message.hashCode,
-              map["title"].toString(),
-              map["body"].toString(),
-              NotificationDetails(
-                  android: AndroidNotificationDetails(
-                    channel.id,
-                    channel.name,
-                    channel.description,
-                    color: Colors.blue,
-                    playSound: true,
-                    icon: '@mipmap/ic_launcher',
-                    largeIcon: DrawableResourceAndroidBitmap(
-                        '@mipmap/ic_launcher'),
-                  )
-              ));
-
-        }
-
-
-      }else {
-        RemoteNotification? notification  = message.notification;
-
-        AndroidNotification? android = message.notification?.android;
-
-        if (notification != null && android != null) {
-          createList(notification);
-          flutterLocalNotificationsPlugin.show(
-              notification.hashCode,
-              notification.title,
-              notification.body,
-              NotificationDetails(
-                  android: AndroidNotificationDetails(
-                    channel.id,
-                    channel.name,
-                    channel.description,
-                    color: Colors.blue,
-                    playSound: true,
-                    icon: '@mipmap/ic_launcher',
-                    largeIcon: DrawableResourceAndroidBitmap(
-                        '@mipmap/ic_launcher'),
-                  )
-              ));
-        }
-      }
-    });
-
-
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('A new on message openedApp event was published');
-      RemoteNotification? notification = message.notification;
-      AndroidNotification? androidNotification = message.notification!.android;
-
-      if(notification!=null && androidNotification !=null){
-        createList(notification);
-
-        //    showAlertDialog(context);
-        /*       showDialog(context: context, builder:(_) {
-
-          return AlertDialog(
-            title: Text(notification.title.toString()),
-            content: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(notification.body.toString())
-                ],
-              ),
-            ),
-          );
-
-        });*/
-      }else if(message.data!=null){
-        Map<String, dynamic> map = message.data;
-        createListMap(map);
-      }
-
-    });
-
-
     super.initState();
+
+
+
   }
-
-
 
 
   Future selectNotification(String? payload) async {
@@ -246,7 +146,7 @@ class _SplashState extends State<Splash> {
       preferences.setStringList("bodyList", bodyListNew);
       preferences.commit();
     }
-    navigatorKey.currentState!.pushNamed('/notification');
+    getNotify();
 
   }
 
@@ -275,6 +175,27 @@ class _SplashState extends State<Splash> {
       preferences.setStringList("bodyList", bodyListNew);
       preferences.commit();
     }
+getNotify();
+  }
 
+   void getNotify() async{
+    notificationCount = 0;
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    var isRead = preferences.getStringList("isRead");
+    print("IsRead " + isRead.toString());
+    if (isRead != null) {
+      if (isRead.isNotEmpty) {
+        for (var k = 0; k < isRead.length; k++) {
+          print("element " + isRead[k].toString());
+          if (isRead[k] == "false") {
+            notificationCount++;
+          }
+        }
+      }
+    }
+    print("countsplash " + notificationCount.toString());
+    preferences.setString("notify",notificationCount.toString());
+    preferences.commit();
+    navigatorKey.currentState!.pushNamed('/home');
   }
 }
