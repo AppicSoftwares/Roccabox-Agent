@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:email_validator/email_validator.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
@@ -24,10 +25,11 @@ class _LoginState extends State<Login> {
   String? pass;
   bool isLoading = false;
   String? name;
-
+  late FirebaseAuth mAuth;
   @override
   void initState() {
     super.initState();
+    mAuth = FirebaseAuth.instance;
   }
 
   @override
@@ -297,6 +299,7 @@ class _LoginState extends State<Login> {
         print("ResponseJSON: " + jsonRes.toString() + "_");
         msg = jsonRes["message"].toString();
         if (jsonRes["status"] == true) {
+          var mCustomToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJmaXJlYmFzZS1hZG1pbnNkay05cTlnYUByb2NjYWJveC1iN2E3OS5pYW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsInN1YiI6ImZpcmViYXNlLWFkbWluc2RrLTlxOWdhQHJvY2NhYm94LWI3YTc5LmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6XC9cL2lkZW50aXR5dG9vbGtpdC5nb29nbGVhcGlzLmNvbVwvZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJpYXQiOjE2MzI5MjE1MzUsImV4cCI6MTYzMjkyNTEzNSwidWlkIjoyMjEsImVtYWlsIjoic2FnYXIxMTExQGdtYWlsLmNvbSIsImNsYWltcyI6eyJwcmVtaXVtX2FjY291bnQiOmZhbHNlfX0.YbMYgXnofh0RTX2dEAoXUPVBtGmvHPzmQToNuChWMaoaWVMibYcolzpqWGtQaUgtqDit_NedZUApQ-5Lo1Nz4-gHBi9Uy6nxkrhudLgnOntmPThwPX8ewk4jFV_UCE6ERE0pXvUH7Xem1mIr1lr9K2lNwDSN5intwzTxFqEZm-fqelqTkitsqYAPRqKo8d26U2TTKVuJfat3wBfyx1hEvrXHPzVQTJh80oLchrBjgn57VS-u_zSGPUl-YZmH2uvw8YU4WAZXNBbUmsZDKeESz3X4vbIYxpX_71Q41Fxeo1-5VhEMNgcKt6iX1FC-icg09pJBxqPX2Z5a3afpo6JB_A";
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setString('id', jsonRes["data"]["id"].toString());
           prefs.setString('email', jsonRes["data"]["email"].toString());
@@ -304,13 +307,18 @@ class _LoginState extends State<Login> {
           prefs.setString('phone', jsonRes["data"]["phone"].toString());
 
           prefs.commit();
+
+          mAuth.signInWithCustomToken(mCustomToken).then((value) {
+            User? user = value.user;
+            print("USer "+user!.uid.toString());
+          });
+
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(msg)));
           setState(() {
             isLoading = false;
           });
-          Navigator.pushAndRemoveUntil(context,
-              MaterialPageRoute(builder: (context) => HomeNav()), (r) => false);
+          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeNav()), (r) => false);
         } else {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(msg)));

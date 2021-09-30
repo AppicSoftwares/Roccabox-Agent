@@ -2,7 +2,9 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
@@ -38,7 +40,9 @@ class _ChatScreenState extends State<ChatScreen> {
   String imageUrl = "";
   bool isLoading = false;
   FirebaseMessaging? auth;
+  late FirebaseAuth mAuth;
   var token;
+  User? user;
   @override
   void initState() {
     focusNode.addListener(onFocusChange);
@@ -47,8 +51,9 @@ class _ChatScreenState extends State<ChatScreen> {
     auth?.getToken().then((value){
       print("FirebaseTokenHome "+value.toString());
       token = value.toString();
-
-      
+      mAuth = FirebaseAuth.instance;
+      user = mAuth.currentUser;
+      print("user "+user!.uid.toString()+"");
 
     }
     );
@@ -215,7 +220,41 @@ class _ChatScreenState extends State<ChatScreen> {
                     ? CrossAxisAlignment.end
                     : CrossAxisAlignment.start,
             children: [
-              Material(
+              docs[index].get("type")=="image"?Container(
+                child: Material(
+                  child: CachedNetworkImage(
+                    placeholder: (con, url ){
+                      return Container(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFFBA00)),
+                        ),
+                        width: 200.0,
+                        height: 200.0,
+                        padding: EdgeInsets.all(70.0),
+                      );
+                    },
+                    errorWidget:(con,url,error){
+                      return Material(
+                        child: Image.asset(
+                          'assets/img_not_available.png',
+                          width: 200.0,
+                          height: 200.0,
+                          fit: BoxFit.cover,
+                        ),
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(8.0),
+                        ),
+                      );
+                    },
+                    imageUrl: docs[index].get("content"),
+                    width: 200.0,
+                    height: 200.0,
+                    fit: BoxFit.fill,
+                  ),
+                  borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                ),
+                margin: EdgeInsets.only(bottom:docs[index].get("idFrom").toString() != widget.senderId ? 20.0 : 10.0, right: 10.0),
+              ):Material(
                   borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(30.0),
                       bottomRight: Radius.circular(30.0),
@@ -234,7 +273,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: Padding(
                     padding:
                         EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-                    child: Text(
+                    child:Text(
                       docs[index].get("content"),
                       style: TextStyle(color: Colors.white, fontSize: 15),
                     ),
@@ -703,7 +742,7 @@ class _ChatScreenState extends State<ChatScreen> {
               'FLUTTER_NOTIFICATION_CLICK',
               'id': '1',
               'status': 'done',
-              "screen": "OPEN_NOTIFICATION",
+              "screen": "CHAT_SCREEN",
             },
             'to': widget.fcmToken
           },
