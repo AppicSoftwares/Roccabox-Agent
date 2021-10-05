@@ -1,7 +1,7 @@
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:file_picker/file_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,9 +11,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:roccabox_agent/screens/imageScreen.dart';
+import 'package:roccabox_agent/screens/videoScreen.dart';
 import 'package:roccabox_agent/services/constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:video_player/video_player.dart';
+
+import 'documentScreen.dart';
 
 class ChatScreen extends StatefulWidget {
   var senderId, receiverId, name, fcmToken, image;
@@ -37,12 +43,16 @@ class _ChatScreenState extends State<ChatScreen> {
   var name;
   var image;
   File? imageFile;
+  File? pdfFile;
   String imageUrl = "";
   bool isLoading = false;
   FirebaseMessaging? auth;
   late FirebaseAuth mAuth;
   var token;
   User? user;
+  bool sendimage = false;
+  late VideoPlayerController _controller;
+
   @override
   void initState() {
     focusNode.addListener(onFocusChange);
@@ -139,6 +149,7 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               subtitle: Text(
                 'Rajveer Place',
+
                 style: TextStyle(
                   fontSize: 12,
                   color: Color(0xff818181),
@@ -152,6 +163,11 @@ class _ChatScreenState extends State<ChatScreen> {
             children: <Widget>[
               // List of messages
               buildListMessage(),
+
+
+              Visibility(
+                  visible: sendimage,
+                  child: Container(width:100,height:100,child: Align(alignment:Alignment.centerRight,child: CircularProgressIndicator( color: Color(0xffFFBA00),),),)),
 
               // Sticker
               // isShowSticker ? buildSticker() : Container(),
@@ -192,26 +208,118 @@ class _ChatScreenState extends State<ChatScreen> {
                 } else {
                   return Center(
                       child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.yellow),
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFFBA00)),
                   ));
                 }
               },
             )
           : Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.yellow),
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFFBA00)),
               ),
             ),
     );
+  }
+  Future getThumbnail(param0) async {
+    _controller = VideoPlayerController.network(
+        param0)
+      ..initialize().then((_) {
+        // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
+        return true;
+      });
+
+  }
+
+  void bottomSheet(){
+    showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ListTile(
+                leading: new Icon(Icons.photo),
+                title: new Text('Photo'),
+                onTap: () {
+                  getImage();
+                  Navigator.pop(context);
+                },
+              ),
+
+              ListTile(
+                leading: new Icon(Icons.videocam),
+                title: new Text('Video'),
+                onTap: () {
+                  getVideo();
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: new Icon(Icons.picture_as_pdf),
+                title: new Text('Documents'),
+                onTap: () {
+                  getPdf();
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        });
+  }
+  Future getVideo() async {
+
+    final pickedFile;
+
+    pickedFile =  await ImagePicker.platform.getVideo(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      imageFile = File(pickedFile.path.toString());
+      if (imageFile != null) {
+        setState(() {
+          isLoading = true;
+        });
+        uploadVideo();
+      }
+    }
+  }
+
+
+  Future uploadVideo() async {
+    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+    //  Reference reference = FirebaseStorage.instance.ref().child("images/");
+    //  UploadTask uploadTask = reference.putFile(imageFile!);
+
+    Reference firebaseStorageRef =
+    FirebaseStorage.instance.ref().child('Videos/$fileName');
+    UploadTask uploadTaskk = firebaseStorageRef.putFile(imageFile!);
+    try {
+      setState(() {
+        sendimage = true;
+      });
+      TaskSnapshot snapshot = await uploadTaskk;
+      imageUrl = await snapshot.ref.getDownloadURL();
+      setState(() {
+        sendimage = false;
+        onSendMessage(imageUrl, 2);
+      });
+    } on FirebaseException catch (e) {
+      print(e.toString());
+      setState(() {
+        sendimage = false;
+      });
+
+    }
   }
 
   Widget chatMessage(List<QueryDocumentSnapshot<Object?>> listMessage,
       List<QueryDocumentSnapshot<Object?>> docs) {
     print("SizeofList " + listMessage.length.toString() + "");
+
     return ListView.builder(
       itemCount: listMessage.length,
       reverse: true,
       itemBuilder: (BuildContext context, int index) {
+
         return Padding(
           padding: const EdgeInsets.all(10.0),
           child: Column(
@@ -220,40 +328,145 @@ class _ChatScreenState extends State<ChatScreen> {
                     ? CrossAxisAlignment.end
                     : CrossAxisAlignment.start,
             children: [
-              docs[index].get("type")=="image"?Container(
+              docs[index].get("type")=="document"?GestureDetector(
+                onTap: (){
+                    if(docs[index].get("content")!=null){
+                      if(docs[index].get("content")!=""){
+                        print("OnTap Document");
+                        Navigator.push(context, new MaterialPageRoute(builder: (context) => DocumentScreen(path: docs[index].get("content"),)));
+
+                      }
+                    }
+                  },
                 child: Material(
-                  child: CachedNetworkImage(
-                    placeholder: (con, url ){
-                      return Container(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFFBA00)),
+                  borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(30.0),
+                      bottomRight: Radius.circular(30.0),
+                      topLeft: docs[index].get("idFrom").toString() ==
+                          widget.senderId
+                          ? Radius.circular(30.0)
+                          : Radius.circular(0.0),
+                      topRight: docs[index].get("idFrom").toString() ==
+                          widget.senderId
+                          ? Radius.circular(0)
+                          : Radius.circular(30.0)),
+                  elevation: 5.0,
+                  color: docs[index].get("idFrom").toString() != widget.senderId
+                      ? Colors.blueAccent
+                      : kPrimaryColor,
+                  child:Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                              height: 50,
+                              width: 50,
+                              child:Image.asset("assets/doc_icon.png")
+
+                          ),
                         ),
-                        width: 200.0,
-                        height: 200.0,
-                        padding: EdgeInsets.all(70.0),
-                      );
-                    },
-                    errorWidget:(con,url,error){
-                      return Material(
-                        child: Image.asset(
-                          'assets/img_not_available.png',
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                              child:Text("Document", style: TextStyle(color:Colors.white),)
+
+                          ),
+                        ),
+                      ],
+                    ),
+                ),
+              )
+
+
+                  : docs[index].get("type")=="video"?GestureDetector(
+                  onTap: (){
+                    if(docs[index].get("content")!=null){
+                      if(docs[index].get("content")!=""){
+                        Navigator.push(context, new MaterialPageRoute(builder: (context) => VideoScreen(video: docs[index].get("content"),)));
+
+                      }
+                    }
+                  },
+                  child:Material(
+                    borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(30.0),
+                        bottomRight: Radius.circular(30.0),
+                        topLeft: docs[index].get("idFrom").toString() ==
+                            widget.senderId
+                            ? Radius.circular(30.0)
+                            : Radius.circular(0.0),
+                        topRight: docs[index].get("idFrom").toString() ==
+                            widget.senderId
+                            ? Radius.circular(0)
+                            : Radius.circular(30.0)),
+                    elevation: 5.0,
+                    color: docs[index].get("idFrom").toString() != widget.senderId
+                        ? Colors.blueAccent
+                        : kPrimaryColor,
+                    child:Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                              height: 50,
+                              width: 50,
+                              child:Image.asset("assets/play.png")
+
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                              child:Text("Video", style: TextStyle(color:Colors.white),)
+
+                          ),
+                        ),
+                      ],
+                    ),
+                  )): docs[index].get("type")=="image"?GestureDetector(
+                onTap: (){
+                  if(docs[index].get("content")!=null){
+                    if(docs[index].get("content")!=""){
+                      Navigator.push(context, new MaterialPageRoute(builder: (context) => ImageScreen(image: docs[index].get("content"),)));
+
+                    }
+                  }
+                },
+                child: Container(
+                  child: Material(
+                    child: CachedNetworkImage(
+                      placeholder: (con, url ){
+                        return Image.asset(
+                          'assets/placeholder.png',
                           width: 200.0,
                           height: 200.0,
-                          fit: BoxFit.cover,
-                        ),
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(8.0),
-                        ),
-                      );
-                    },
-                    imageUrl: docs[index].get("content"),
-                    width: 200.0,
-                    height: 200.0,
-                    fit: BoxFit.fill,
+                          fit: BoxFit.fill,
+                        );
+                      },
+                      errorWidget:(con,url,error){
+                        return Material(
+                          child: Image.asset(
+                            'assets/img_not_available.png',
+                            width: 200.0,
+                            height: 200.0,
+                            fit: BoxFit.cover,
+                          ),
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(8.0),
+                          ),
+                        );
+                      },
+                      imageUrl: docs[index].get("content"),
+                      width: 200.0,
+                      height: 200.0,
+                      fit: BoxFit.fill,
+                    ),
+                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
                   ),
-                  borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                  margin: EdgeInsets.only(bottom:docs[index].get("idFrom").toString() != widget.senderId ? 20.0 : 10.0, right: 10.0),
                 ),
-                margin: EdgeInsets.only(bottom:docs[index].get("idFrom").toString() != widget.senderId ? 20.0 : 10.0, right: 10.0),
               ):Material(
                   borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(30.0),
@@ -357,7 +570,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       suffixIcon: Padding(
                         padding: const EdgeInsets.only(right: 20),
                         child: InkWell(
-                          onTap: getImage,
+                          onTap: bottomSheet,
                           child: SvgPicture.asset(
                             "assets/attachment.svg",
                             width: 5,
@@ -459,7 +672,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             //     curve: Curves.easeOut);
                           }
 
-                          sendNotification();
+                          sendNotification("text");
                         },
                         color: Color(0xffFFBA00),
                       ),
@@ -491,7 +704,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void updateChatHead(String s) async {
     print("messageeee " + message + "");
- print("mytoken " + token + "");
+ print("agentName " + name + "");
+ print("username " + widget.name + "");
     var documentReference = FirebaseFirestore.instance
         .collection('chat_master')
         .doc("chat_head")
@@ -548,7 +762,7 @@ class _ChatScreenState extends State<ChatScreen> {
     SharedPreferences pref = await SharedPreferences.getInstance();
     name = pref.getString("name");
     image = pref.getString("image");
-
+    print("Image "+image.toString());
     var documentReference = FirebaseFirestore.instance
         .collection('chat_master')
         .doc("chat_head")
@@ -579,6 +793,51 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+
+
+
+  Future getPdf() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ["pdf"]);
+
+    if (result != null) {
+      pdfFile = File(result.files.single.path.toString());
+    } else {
+      // User canceled the picke
+    }
+
+      if (pdfFile != null) {
+        uploadpdf();
+      }
+  }
+
+
+
+  Future uploadpdf() async {
+    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+    //  Reference reference = FirebaseStorage.instance.ref().child("images/");
+    //  UploadTask uploadTask = reference.putFile(imageFile!);
+
+    Reference firebaseStorageRef =
+    FirebaseStorage.instance.ref().child('Documents/$fileName');
+    UploadTask uploadTaskk = firebaseStorageRef.putFile(pdfFile!);
+    try {
+      setState(() {
+        sendimage = true;
+      });
+      TaskSnapshot snapshot = await uploadTaskk;
+      imageUrl = await snapshot.ref.getDownloadURL();
+      setState(() {
+        sendimage = false;
+        onSendMessage(imageUrl, 3);
+      });
+    } on FirebaseException catch (e) {
+      print(e.toString());
+      setState(() {
+        sendimage = false;
+      });
+    }
+  }
+
   Future uploadFile() async {
     String fileName = DateTime.now().millisecondsSinceEpoch.toString();
     //  Reference reference = FirebaseStorage.instance.ref().child("images/");
@@ -588,16 +847,19 @@ class _ChatScreenState extends State<ChatScreen> {
         FirebaseStorage.instance.ref().child('uploads/$fileName');
     UploadTask uploadTaskk = firebaseStorageRef.putFile(imageFile!);
     try {
+      setState(() {
+        sendimage = true;
+      });
       TaskSnapshot snapshot = await uploadTaskk;
       imageUrl = await snapshot.ref.getDownloadURL();
       setState(() {
-        isLoading = false;
+        sendimage = false;
         onSendMessage(imageUrl, 1);
       });
     } on FirebaseException catch (e) {
       print(e.toString());
       setState(() {
-        isLoading = false;
+        sendimage = false;
       });
     }
   }
@@ -617,7 +879,7 @@ class _ChatScreenState extends State<ChatScreen> {
           'idTo': widget.receiverId,
           'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
           'content': content,
-          'type': "image"
+          'type': type==1?"image":type==2?"video":"document"
         },
       );
     }).then((value) {
@@ -635,20 +897,24 @@ class _ChatScreenState extends State<ChatScreen> {
             'idTo': widget.receiverId,
             'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
             'content': content,
-            'type': "image"
+            'type':type==1?"image":type==2?"video":"document"
           },
         );
       });
 
-      updateChatHead2(content);
+      updateChatHead2(content, type);
 
       _textEditingController.clear();
       focusNode.unfocus();
     });
     listScrollController.animateTo(0.0,
         duration: Duration(milliseconds: 300), curve: Curves.easeOut);
+    var typee =  type==1?"image":type==2?"video":"document";
+
+    sendNotification(typee);
+
   }
-  void updateChatHead2(String s) async {
+  void updateChatHead2(String s, int type) async {
 
     var documentReference = FirebaseFirestore.instance
         .collection('chat_master')
@@ -663,11 +929,11 @@ class _ChatScreenState extends State<ChatScreen> {
         {
           'idFrom': widget.senderId,
           'idTo': widget.receiverId,
-          'msg': s.toString(),
+          'msg': type==1?"image":type==2?"video":"Document",
           'timestamp': DateTime.now()
               .millisecondsSinceEpoch
               .toString(),
-          'type': "image",
+          'type': type==1?"image":type==2?"video":"document",
           'image':widget.image,
           'agent': name,
           'user':widget.name,
@@ -692,8 +958,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 .now()
                 .millisecondsSinceEpoch
                 .toString(),
-            'msg': s.toString(),
-            'type': "image",
+            'msg': type==1?"image":type==2?"video":"Document",
+            'type': type==1?"image":type==2?"video":"document",
             'image': image,
             'agent': name,
             'user': widget.name,
@@ -709,7 +975,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
 
 
-  Future sendNotification() async {
+  Future sendNotification(String type) async {
     Map<String, String> map  = new HashMap();
     map["Authorization"] = "key=AAAAtgmz2LM:APA91bHyV1VbnfG-dRXDo1cgzQDkYll-0ZRdKbeTL4Hv0hbFilEiTPLHHXkA_teNx-z9xNBqkM2a54TwJ75-mPQjCsBVlzKyuSYPc3oJHMCpFBqlSPWrClV96h5xuVQsGBEu8yVzlZdn";
     map["content-type"] = "application/json";
@@ -740,7 +1006,7 @@ class _ChatScreenState extends State<ChatScreen> {
             'data': <String, dynamic>{
               'click_action':
               'FLUTTER_NOTIFICATION_CLICK',
-              'id': '1',
+              'id': widget.senderId,
               'status': 'done',
               "screen": "CHAT_SCREEN",
             },
@@ -761,8 +1027,34 @@ class _ChatScreenState extends State<ChatScreen> {
 
     msg= "";
   }
+/*  Future<File> getFileFromUrl(String url, {name}) async {
+    var fileName = 'testonline';
+    if (name != null) {
+      fileName = name;
+    }
+    try {
+      var data = await http.get(Uri.parse(url));
+      var bytes = data.bodyBytes;
+      var dir = await getApplicationDocumentsDirectory();
+      File file = File("${dir.path}/" + fileName + ".pdf");
+      print("pathh"+dir.path);
+      imageFromPdfFile(dir.path);
+      File urlFile = await file.writeAsBytes(bytes);
+      return urlFile;
+    } catch (e) {
+      throw Exception("Error opening url file");
+    }
+  }
+  imageFromPdfFile(String pdfFile) async {
+    final document = await PdfDocument.openFile(pdfFile);
+    final page = await document.getPage(1);
+    final pageImage = await page.render(width: page.width, height: page.height);
+    await page.close();
+    print("ImageBytes "+pageImage!.bytes.toString());
 
-
+    //... now convert
+    // .... pageImage.bytes to image
+  }*/
 
 }
 
