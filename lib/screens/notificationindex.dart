@@ -22,7 +22,7 @@ class NotificationIndex extends StatefulWidget {
 
 class _HomeNavState extends State<NotificationIndex> {
   int _index = 2;
-  List widgets = <Widget>[Chat(), Call(), Notifications(), Profile()];
+  List widgets = <Widget>[Chat(), Calls(), Notifications(), Profile()];
 FirebaseMessaging? auth;
   var token;
     LanguageChange languageChange = new LanguageChange();

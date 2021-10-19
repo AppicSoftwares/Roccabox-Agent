@@ -2,9 +2,13 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:provider/src/provider.dart';
 
 import 'package:roccabox_agent/screens/homenav.dart';
+import 'package:roccabox_agent/services/modelProvider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../main.dart';
 
 class Notifications extends StatefulWidget {
   @override
@@ -67,7 +71,21 @@ class _NotificationsState extends State<Notifications> {
             padding: EdgeInsets.only(right: 10, top: 5),
             child: InkWell(
               borderRadius: BorderRadius.circular(100),
-              onTap: () {
+              onTap: () async {
+
+                SharedPreferences pref = await SharedPreferences.getInstance();
+                pref.remove("titleList");
+                pref.remove("bodyList");
+                pref.remove("isRead");
+                //pref.getStringList("timeList" ).clear();
+                titleList.clear();
+                bodyList.clear();
+                notificationCount = 0;
+                context.read<Counter>().getNotify();
+
+                setState(() {
+
+                });
 
               },
               child: Container(

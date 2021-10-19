@@ -1,16 +1,26 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:provider/provider.dart';
+import 'package:roccabox_agent/agora/audioCall/audioCallMain.dart';
+import 'package:roccabox_agent/agora/callModel.dart';
+import 'package:roccabox_agent/screens/chatscreen.dart';
 import 'package:roccabox_agent/screens/homenav.dart';
 import 'package:roccabox_agent/screens/notifications.dart';
+import 'package:roccabox_agent/services/modelProvider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'screens/splash.dart';
 
 
+
+var currentInstance = "";
+var chatUser = "";
 int langCount = 0;
 int notificationCount = 0;
 const AndroidNotificationChannel channel = AndroidNotificationChannel(
@@ -20,7 +30,9 @@ const AndroidNotificationChannel channel = AndroidNotificationChannel(
     importance: Importance.high,
     playSound: true,
     enableLights: true,
-    showBadge: true
+    showBadge: true,
+
+
 
 );
 
@@ -48,13 +60,219 @@ Future main() async {
       sound: true
   );
   HttpOverrides.global = MyHttpOverrides();
-  runApp(MyApp());
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (_) => Counter()),
+    ],
+    child: MyApp(),
+  ),);
 }
 final GlobalKey<NavigatorState> navigatorKey = new GlobalKey<NavigatorState>();
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
 
   // This widget is the root of your application.
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+
+
+
+
+  @override
+  void initState() {
+    super.initState();
+
+    getNotify();
+
+
+    var initializationSettingsAndroid =
+    new AndroidInitializationSettings('@mipmap/ic_launcher');
+    final IOSInitializationSettings initializationSettingsIOS =
+    IOSInitializationSettings(
+        onDidReceiveLocalNotification: onDidReceiveLocalNotification);
+    final InitializationSettings initializationSettings = InitializationSettings(
+        iOS: initializationSettingsIOS, android: initializationSettingsAndroid);
+    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: selectNotification);
+
+    //fetchLocation();
+    FirebaseMessaging.onMessage.listen((RemoteMessage message){
+      print('Running On Message');
+      print('CurrentInstance '+currentInstance.toString()+"");
+
+
+      Map<String, dynamic>map;
+      if(message.notification==null){
+        if(message.data!=null) {
+          map = message.data;
+
+          print("map " + map.toString());
+          print("id " + map["id"]);
+          if (map["screen"] == "VIDEO_SCREEN") {
+            navigatorKey.currentState!.pushReplacementNamed('/call_received',
+                arguments: CallModel(
+                    map["sender_image"],
+                    map["channelName"],
+                    map["time"],
+                    map["type"],
+                    map["sender_fcm"],
+                    map["sender_id"],
+                    map["sender_name"],
+                    map["agoraToken"]));
+          } else {
+            if (chatUser == null) {
+              createListMap(map);
+              flutterLocalNotificationsPlugin.show(
+                  message.hashCode,
+                  map["title"].toString(),
+                  map["body"].toString(),
+                  NotificationDetails(
+                      android: AndroidNotificationDetails(
+                        channel.id,
+                        channel.name,
+                        channel.description,
+                        color: Colors.blue,
+                        playSound: true,
+                        additionalFlags: Int32List.fromList(<int>[4]),
+                        icon: '@mipmap/ic_launcher',
+                        largeIcon: DrawableResourceAndroidBitmap(
+                            '@mipmap/ic_launcher'),
+                      )
+                  ));
+            } else if (chatUser != map["id"]) {
+              flutterLocalNotificationsPlugin.show(
+                  message.hashCode,
+                  map["title"].toString(),
+                  map["body"].toString(),
+                  NotificationDetails(
+                      android: AndroidNotificationDetails(
+                        channel.id,
+                        channel.name,
+                        channel.description,
+                        color: Colors.blue,
+                        playSound: true,
+                        icon: '@mipmap/ic_launcher',
+                        largeIcon: DrawableResourceAndroidBitmap(
+                            '@mipmap/ic_launcher'),
+                      )
+                  ));
+            }
+          }
+        }
+
+
+      }else {
+        RemoteNotification? notification  = message.notification;
+
+        AndroidNotification? android = message.notification?.android;
+
+        if (notification != null && android != null) {
+          Map<String, dynamic>map = new Map();
+          var screen = "";
+
+          if(message.data!=null){
+
+            map = message.data;
+            screen = map["screen"];
+            print("Screennnnn "+map.toString());
+          }
+
+          if(map["screen"]=="VIDEO_SCREEN"){
+            navigatorKey.currentState!.pushReplacementNamed('/call_received', arguments: CallModel(map["sender_image"], map["channelName"], map["time"],  map["type"], map["sender_fcm"], map["sender_id"], map["sender_name"], map["agoraToken"]));
+
+          }else{
+          if(chatUser==null) {
+            createList(notification);
+            flutterLocalNotificationsPlugin.show(
+                notification.hashCode,
+                notification.title,
+                notification.body,
+                NotificationDetails(
+                    android: AndroidNotificationDetails(
+                      channel.id,
+                      channel.name,
+                      channel.description,
+                      color: Colors.blue,
+                      playSound: true,
+                      icon: '@mipmap/ic_launcher',
+                      largeIcon: DrawableResourceAndroidBitmap(
+                          '@mipmap/ic_launcher'),
+                    )
+                ));
+          }else if(chatUser!=map["id"]) {
+            createList(notification);
+            flutterLocalNotificationsPlugin.show(
+                notification.hashCode,
+                notification.title,
+                notification.body,
+                NotificationDetails(
+                    android: AndroidNotificationDetails(
+                      channel.id,
+                      channel.name,
+                      channel.description,
+                      color: Colors.blue,
+                      playSound: true,
+                      icon: '@mipmap/ic_launcher',
+                      largeIcon: DrawableResourceAndroidBitmap(
+                          '@mipmap/ic_launcher'),
+                    )
+                ));
+          }
+          }
+        }
+      }
+    });
+
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('A new on message openedApp event was published');
+      RemoteNotification? notification = message.notification;
+      AndroidNotification? androidNotification = message.notification!.android;
+
+      if(notification!=null && androidNotification !=null){
+        Map<String, dynamic> map = message.data;
+        if(message.data!=null){
+          map = message.data;
+          if(map['screen']=="VIDEO_SCREEN"){
+            navigatorKey.currentState!.pushReplacementNamed('/call_received', arguments: CallModel(map["sender_image"], map["channelName"], map["time"],  map["type"], map["sender_fcm"], map["sender_id"], map["sender_name"], map["agoraToken"]));
+
+          }else {
+            createList(notification);
+          }
+        }
+        //    showAlertDialog(context);
+        /*       showDialog(context: context, builder:(_) {
+
+          return AlertDialog(
+            title: Text(notification.title.toString()),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(notification.body.toString())
+                ],
+              ),
+            ),
+          );
+
+        });*/
+      }else if(message.data!=null){
+        Map<String, dynamic> map = message.data;
+        if(map['screen']=="VIDEO_SCREEN"){
+          navigatorKey.currentState!.pushReplacementNamed('/call_received', arguments: CallModel(map["sender_image"], map["channelName"], map["time"],  map["type"], map["sender_fcm"], map["sender_id"], map["sender_name"], map["agoraToken"]));
+
+        }else{
+          createListMap(map);
+        }
+      }
+
+    });
+
+
+  }
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -76,12 +294,148 @@ class MyApp extends StatelessWidget {
 
       routes: {
     '/notification': (context)=> Notifications(),
-    '/home': (context)=> HomeNav()
+    '/home': (context)=> HomeNav(),
+    '/chatscreen': (context)=> ChatScreen(),
+    '/call_received':(context)=> AudioCallWithImage()
     },
       navigatorKey: navigatorKey,
 
     );
   }
+
+
+
+
+
+  Future<void> createList(RemoteNotification notification) async {
+    print("ListSave");
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    List<String>? titleList = preferences.getStringList('titleList');
+    List<String>? bodyList = preferences.getStringList('bodyList');
+    List<String>? isReadList = preferences.getStringList('isRead');
+    // List<String> timeList = preferences.getStringList('timeList');
+    if(titleList!=null && bodyList!=null && isReadList!=null){
+      titleList.add(notification.title.toString());
+      bodyList.add(notification.body.toString());
+      isReadList.add("false");
+      preferences.setStringList("titleList", titleList);
+      preferences.setStringList("bodyList", bodyList);
+      preferences.setStringList("isRead", isReadList);
+      //  preferences.setStringList("timeList", timeList);
+      preferences.commit();
+    }else{
+      List<String> titleListNew = [];
+      List<String> bodyListNew = [];
+      List<String> isReadNew = [];
+
+      titleListNew.add(notification.title.toString());
+      bodyListNew.add(notification.body.toString());
+      isReadNew.add("false");
+
+      preferences.setStringList("titleList", titleListNew);
+      preferences.setStringList("bodyList", bodyListNew);
+      preferences.setStringList("isRead", isReadNew);
+      preferences.commit();
+    }
+
+    getNotify();
+
+  }
+  void getNotify() async{
+    notificationCount = 0;
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    var isRead = preferences.getStringList("isRead");
+    print("IsRead " + isRead.toString());
+    if (isRead != null) {
+      if (isRead.isNotEmpty) {
+        for (var k = 0; k < isRead.length; k++) {
+          print("element " + isRead[k].toString());
+          if (isRead[k] == "false") {
+            notificationCount++;
+          }
+        }
+      }
+    }
+    context.read<Counter>().getNotify();
+    print("countsplash " + notificationCount.toString());
+    preferences.setString("notify",notificationCount.toString());
+    preferences.commit();
+
+    //   navigatorKey.currentState!.pushReplacementNamed('/home');
+  }
+
+
+  Future<void> createListMap(Map<String, dynamic> map) async {
+    print("ListSaveMap");
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    List<String>? titleList = preferences.getStringList('titleList');
+    List<String>? bodyList = preferences.getStringList('bodyList');
+    List<String>? isReadList = preferences.getStringList('isRead');
+    // List<String> timeList = preferences.getStringList('timeList');
+    if(titleList!=null && bodyList!=null && isReadList!=null){
+      titleList.add(map["title"].toString());
+      bodyList.add(map["body"].toString());
+      isReadList.add("false");
+      preferences.setStringList("titleList", titleList);
+      preferences.setStringList("bodyList", bodyList);
+      preferences.setStringList("isRead", isReadList);
+      //  preferences.setStringList("timeList", timeList);
+      preferences.commit();
+    }else{
+      List<String> titleListNew = [];
+      List<String> bodyListNew = [];
+      List<String> isReadListNew = [];
+
+      titleListNew.add(map["title"].toString());
+      bodyListNew.add(map["body"].toString());
+      isReadListNew.add("false");
+
+      preferences.setStringList("titleList", titleListNew);
+      preferences.setStringList("bodyList", bodyListNew);
+      preferences.setStringList("isRead", isReadListNew);
+      preferences.commit();
+    }
+
+
+    getNotify();
+  }
+
+  Future selectNotification(String? payload) async {
+/*    if (payload != null) {
+      debugPrint('notification payload: $payload');
+    }*/
+    navigatorKey.currentState!.pushNamed('/notification');
+
+  }
+  Future onDidReceiveLocalNotification(
+      int? id, String? title, String? body, String? payload) async {
+    // display a dialog with the notification details, tap ok to go to another page
+    showDialog(
+      context: context,
+      builder: (BuildContext context) =>
+          CupertinoAlertDialog(
+            title: Text(title.toString()),
+            content: Text(body.toString()),
+            actions: [
+              CupertinoDialogAction(
+                isDefaultAction: true,
+                child: Text('Ok'),
+                onPressed: () async {
+                  Navigator.of(context, rootNavigator: true).pop();
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Notifications(),
+                    ),
+                  );
+                },
+              )
+            ],
+          ),
+    );
+  }
+
+
 
 
 }

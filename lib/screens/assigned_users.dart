@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:roccabox_agent/screens/chatscreen.dart';
 import 'package:roccabox_agent/screens/user_Detail.dart';
+import 'package:roccabox_agent/twilio/callscreen.dart';
+import 'package:roccabox_agent/twilio/dialer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Setting.dart';
@@ -70,13 +72,28 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
               widget.totalUserList[index].message,
               style: TextStyle(fontSize: 12, color: Color(0xff818181)),
             ),
-            trailing: GestureDetector(
-                onTap: () async {
-                  SharedPreferences pref = await SharedPreferences.getInstance();
-                  var id = pref.getString("id");
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(senderId:id, receiverId: widget.totalUserList[index].userId, name:  widget.totalUserList[index].name, image: widget.totalUserList[index].image,)));
-                },
-                child: Icon(Icons.chat, color: Colors.black,size: 24)),
+            trailing: SizedBox(
+              width: 70,
+              child: Row(
+                children: [
+                  GestureDetector(
+                      onTap: () async {
+                        SharedPreferences pref = await SharedPreferences.getInstance();
+                        var id = pref.getString("id");
+                       // Navigator.push(context, MaterialPageRoute(builder: (context) => DialScreen(senderId:id, receiverId: widget.totalUserList[index].userId, name:  widget.totalUserList[index].name, image: widget.totalUserList[index].image,fcmToken: widget.totalUserList[index].firebase_token,)));
+                      },
+                      child: Icon(Icons.call, color: Colors.black,size: 24)),
+                  SizedBox(width: 20,),
+                  GestureDetector(
+                      onTap: () async {
+                        SharedPreferences pref = await SharedPreferences.getInstance();
+                        var id = pref.getString("id");
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(senderId:id, receiverId: widget.totalUserList[index].userId, name:  widget.totalUserList[index].name, image: widget.totalUserList[index].image,fcmToken: widget.totalUserList[index].firebase_token,)));
+                      },
+                      child: Icon(Icons.chat, color: Colors.black,size: 24)),
+                ],
+              ),
+            ),
           );
         },
       ),

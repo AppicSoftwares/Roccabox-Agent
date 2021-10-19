@@ -13,4 +13,6 @@ class RestDatasource {
   static final CHANGEPASSWORD_URL = BASE_URL + "changePassword";
   static final FORGOTPASSWORD_URL = BASE_URL + "forget-password";
   static final SENDTOKEN_URL = BASE_URL + "updateToken";
+  static final TWILIOTOKEN = BASE_URL + "twilioToken";
+  static final AGORATOKEN = BASE_URL + "agora-token";
 }

@@ -288,27 +288,37 @@ class _LoginState extends State<Login> {
         print("ResponseJSON: " + jsonRes.toString() + "_");
         msg = jsonRes["message"].toString();
         if (jsonRes["status"] == true) {
-          var mCustomToken = jsonRes["token"];
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setString('id', jsonRes["data"]["id"].toString());
-          prefs.setString('email', jsonRes["data"]["email"].toString());
-          prefs.setString('name', jsonRes["data"]["name"].toString());
-          prefs.setString('phone', jsonRes["data"]["phone"].toString());
-          prefs.setString('image', jsonRes["data"]["image"].toString());
+          if(jsonRes["data"]["status"].toString()=="1") {
+            var mCustomToken = jsonRes["token"];
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            prefs.setString('id', jsonRes["data"]["id"].toString());
+            prefs.setString('email', jsonRes["data"]["email"].toString());
+            prefs.setString('name', jsonRes["data"]["name"].toString());
+            prefs.setString('phone', jsonRes["data"]["phone"].toString());
+            prefs.setString('image', jsonRes["data"]["image"].toString());
 
-          prefs.commit();
+            prefs.commit();
 
-          mAuth.signInWithCustomToken(mCustomToken).then((value) {
-            User? user = value.user;
-            print("FirebaseUSer "+user!.uid.toString());
-          });
+            mAuth.signInWithCustomToken(mCustomToken).then((value) {
+              User? user = value.user;
+              print("FirebaseUSer " + user!.uid.toString());
+            });
 
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(msg)));
-          setState(() {
-            isLoading = false;
-          });
-          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeNav()), (r) => false);
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(msg)));
+            setState(() {
+              isLoading = false;
+            });
+            Navigator.pushAndRemoveUntil(
+                context, MaterialPageRoute(builder: (context) => HomeNav()), (
+                r) => false);
+          }else{
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text("Please wait until admin approve your profile ")));
+            setState(() {
+              isLoading = false;
+            });
+          }
         } else {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(msg)));

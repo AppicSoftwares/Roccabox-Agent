@@ -22,7 +22,7 @@ class HomeNav extends StatefulWidget {
 
 class _HomeNavState extends State<HomeNav> {
   int _index = 0;
-  List widgets = <Widget>[Chat(), Call(), Notifications(), Profile()];
+  List widgets = <Widget>[Chat(), Calls(), Notifications(), Profile()];
 FirebaseMessaging? auth;
   var token;
     LanguageChange languageChange = new LanguageChange();
@@ -44,7 +44,7 @@ GlobalKey globalKey = new GlobalKey(debugLabel: 'btm_app_bar');
 
     }
     );
-
+    //getAccessToken();
     getNotify();
 
   }
@@ -173,5 +173,9 @@ GlobalKey globalKey = new GlobalKey(debugLabel: 'btm_app_bar');
     preferences.commit();
     setState(() {});
   }
+
+
+
+
 
 }

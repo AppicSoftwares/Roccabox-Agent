@@ -394,7 +394,7 @@ class _SignupState extends State<Signup> {
         prefs.commit();
         Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => HomeNav()),
+            MaterialPageRoute(builder: (context) => Login()),
             (route) => false);
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(jsonRes["message"].toString())));

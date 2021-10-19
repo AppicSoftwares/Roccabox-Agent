@@ -2,9 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:provider/src/provider.dart';
 import 'package:roccabox_agent/screens/chatscreen.dart';
 import 'package:roccabox_agent/screens/notificationindex.dart';
 import 'package:roccabox_agent/screens/notifications.dart';
+import 'package:roccabox_agent/services/modelProvider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Chat extends StatefulWidget {
@@ -17,7 +19,7 @@ class _ChatState extends State<Chat> {
   List<QueryDocumentSnapshot> listUsers = new List.from([]);
   final firestoreInstance = FirebaseFirestore.instance;
   List<UserList> listUser = [];
-  String notiCount = "";
+  String notiCount = "0";
   var id;
   @override
   void initState() {
@@ -73,33 +75,7 @@ class _ChatState extends State<Chat> {
                           color: Colors.black54,
                         ),
                       ),
-                      Visibility(
-                        visible: notiCount=="0"?false:true,
-                        child: Positioned(
-                          top: -3,
-                          right: 0,
-                          child: Container(
-                            height: 16,
-                            width: 16,
-                            decoration: BoxDecoration(
-                              color: Color(0xFFFF4848),
-                              shape: BoxShape.circle,
-                              border: Border.all(width: 1.5, color: Colors.white),
-                            ),
-                            child: Center(
-                              child: Text(
-                                notiCount,
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  height: 1,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      )
+                      Count()
                     ],
                   ),
                 ),
@@ -151,7 +127,7 @@ class _ChatState extends State<Chat> {
                           image: listUser[index].image,
                           receiverId: listUser[index].id,
                           senderId: id,fcmToken: listUser[index].fcmToken,))),
-                leading:listUser[index].image==null? CircleAvatar(
+                leading:listUser[index].image==null  || listUser[index].image==""? CircleAvatar(
                   backgroundImage: AssetImage('assets/img1.png'),
                 ):CircleAvatar(backgroundImage: NetworkImage(listUser[index].image.toString() )),
                 title: Text(
@@ -229,6 +205,7 @@ class UserList{
   String? message;
   String? clicked;
   String? fcmToken;
+  String? timestamp;
 }
 
 
@@ -254,5 +231,42 @@ class LifecycleEventHandler extends WidgetsBindingObserver {
       case AppLifecycleState.detached:
         break;
     }
+  }
+}
+
+class Count extends StatelessWidget {
+  const Count({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    var count  = '${context.watch<Counter>().count}';
+
+    return Visibility(
+      visible: count.toString()=="0"?false:true,
+      child: Positioned(
+        top: -3,
+        right: 0,
+        child: Container(
+          height: 16,
+          width: 16,
+          decoration: BoxDecoration(
+            color: Color(0xFFFF4848),
+            shape: BoxShape.circle,
+            border: Border.all(width: 1.5, color: Colors.white),
+          ),
+          child: Center(
+            child: Text(
+              count.toString(),
+              style: TextStyle(
+                fontSize: 10,
+                height: 1,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

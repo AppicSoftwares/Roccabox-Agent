@@ -323,7 +323,7 @@ class _ProfileState extends State<Profile> {
   Future<dynamic> getUserList() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     var id = pref.getString("id").toString();
-   
+    print("id "+id.toString()+"");
     var request = http.get(Uri.parse(
       RestDatasource.GETASSIGNEDUSER_URL + id,
     ));
@@ -360,6 +360,7 @@ class _ProfileState extends State<Profile> {
               modelSearch.property_image = jsonArray[i]["property_image"].toString();
               modelSearch.image = jsonArray[i]["image"].toString();
               modelSearch.filter_id = jsonArray[i]["filter_id"].toString();
+              modelSearch.firebase_token = jsonArray[i]["firebase_token"].toString();
               modelSearch.property_Rid =
                   jsonArray[i]["property_Rid"].toString();
               modelSearch.message = jsonArray[i]["message"].toString();
@@ -440,4 +441,5 @@ class TotalUserList {
   String property_image = "";
   String image = "";
   String filter_id = "";
+  String firebase_token = "";
 }

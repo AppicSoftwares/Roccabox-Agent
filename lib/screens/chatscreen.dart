@@ -19,6 +19,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:video_player/video_player.dart';
 
+import '../main.dart';
 import 'documentScreen.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -55,6 +56,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void initState() {
+    currentInstance = "CHAT_SCREEN";
+    chatUser = widget.receiverId;
     focusNode.addListener(onFocusChange);
     listScrollController.addListener(_scrollListener);
     auth = FirebaseMessaging.instance;
@@ -77,7 +80,12 @@ class _ChatScreenState extends State<ChatScreen> {
       setState(() {});
     }
   }
-
+  @override
+  void dispose() {
+    currentInstance = "";
+    chatUser = "";
+    super.dispose();
+  }
   _scrollListener() {
     if (listScrollController.offset >=
             listScrollController.position.maxScrollExtent &&
@@ -439,7 +447,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: CachedNetworkImage(
                       placeholder: (con, url ){
                         return Image.asset(
-                          'assets/placeholder.png',
+                          'assets/img_not_available.png',
                           width: 200.0,
                           height: 200.0,
                           fit: BoxFit.fill,
@@ -600,14 +608,17 @@ class _ChatScreenState extends State<ChatScreen> {
                       child: IconButton(
                         icon: Icon(Icons.send),
                         onPressed: () {
+                          message = _textEditingController.text.toString().trim();
                           if (_textEditingController.text
                               .toString()
                               .trim()
-                              .isNotEmpty) {
-                            message = _textEditingController.text.toString().trim();
+                              .isNotEmpty && _textEditingController.text.toString().trim()!="") {
+
                             msg = _textEditingController.text.toString().trim();
                             print("SenderId " + widget.senderId + "");
                             print("Id " + widget.receiverId + "");
+                            print("TextEdit " +message);
+
                             var documentReference = FirebaseFirestore.instance
                                 .collection('chat_master')
                                 .doc("message_list")
@@ -627,52 +638,56 @@ class _ChatScreenState extends State<ChatScreen> {
                                   'timestamp': DateTime.now()
                                       .millisecondsSinceEpoch
                                       .toString(),
-                                  'content': _textEditingController.text
-                                      .toString()
-                                      .trim(),
+                                  'content': _textEditingController.text.toString().trim(),
                                   'type': "text"
                                 },
                               );
                             }).then((value) {
-                              var s = _textEditingController.text.toString();
-                              print("TextEdit " +
-                                  _textEditingController.text.toString());
-                              var documentReference = FirebaseFirestore.instance
-                                  .collection('chat_master')
-                                  .doc("message_list")
-                                  .collection(
-                                      widget.receiverId + "-" + widget.senderId)
-                                  .doc(DateTime.now()
-                                      .millisecondsSinceEpoch
-                                      .toString());
+                              var s = _textEditingController.text.toString().trim();
+                              print("value " +s.toString());
+                              if(s!=null && s!="") {
+                                var documentReference = FirebaseFirestore
+                                    .instance
+                                    .collection('chat_master')
+                                    .doc("message_list")
+                                    .collection(
+                                    widget.receiverId + "-" + widget.senderId)
+                                    .doc(DateTime
+                                    .now()
+                                    .millisecondsSinceEpoch
+                                    .toString());
 
-                              firestoreInstance
-                                  .runTransaction((transaction) async {
-                                transaction.set(
-                                  documentReference,
-                                  {
-                                    'idFrom': widget.senderId,
-                                    'idTo': widget.receiverId,
-                                    'timestamp': DateTime.now()
-                                        .millisecondsSinceEpoch
-                                        .toString(),
-                                    'content': s.toString(),
-                                    'type': "text"
-                                  },
-                                );
-                              });
+                                firestoreInstance
+                                    .runTransaction((transaction) async {
+                                  transaction.set(
+                                    documentReference,
+                                    {
+                                      'content': s.toString(),
+                                      'idFrom': widget.senderId,
+                                      'idTo': widget.receiverId,
+                                      'timestamp': DateTime
+                                          .now()
+                                          .millisecondsSinceEpoch
+                                          .toString(),
 
-                              updateChatHead(s.toString());
+                                      'type': "text"
+                                    },
+                                  );
+                                });
 
+                                updateChatHead(message);
+                              }
                               _textEditingController.clear();
                               focusNode.unfocus();
                             });
                             // listScrollController.animateTo(0.0,
                             //     duration: Duration(milliseconds: 300),
                             //     curve: Curves.easeOut);
+
+                            sendNotification(msg.toString());
                           }
 
-                          sendNotification("text");
+
                         },
                         color: Color(0xffFFBA00),
                       ),
@@ -909,9 +924,9 @@ class _ChatScreenState extends State<ChatScreen> {
     });
     listScrollController.animateTo(0.0,
         duration: Duration(milliseconds: 300), curve: Curves.easeOut);
-    var typee =  type==1?"image":type==2?"video":"document";
+    msg =  type==1?"image":type==2?"video":"document";
 
-    sendNotification(typee);
+    sendNotification(msg.toString());
 
   }
   void updateChatHead2(String s, int type) async {
@@ -1009,6 +1024,11 @@ class _ChatScreenState extends State<ChatScreen> {
               'id': widget.senderId,
               'status': 'done',
               "screen": "CHAT_SCREEN",
+              "name":widget.name,
+              "image":widget.image,
+              "receiverId":widget.receiverId,
+              "senderid":widget.senderId,
+              "fcm":widget.fcmToken
             },
             'to': widget.fcmToken
           },
