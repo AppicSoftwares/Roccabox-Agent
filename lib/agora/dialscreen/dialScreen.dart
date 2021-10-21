@@ -6,6 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:roccabox_agent/agora/component/dialUser.dart';
 import 'package:roccabox_agent/agora/component/roundedButton.dart';
 import 'package:roccabox_agent/agora/videoCall/videoCall.dart';
+import 'package:roccabox_agent/screens/homenav.dart';
 
 import '../constants.dart';
 import '../sizeConfig.dart';
@@ -27,12 +28,18 @@ class _DialScreenState extends State<DialScreen> {
   late RtcEngine _engine;
   int? _remoteUid;
   bool _localUserJoined = false;
+  var APP_ID = 'c5971380084649549b2af1d70a36c2d2';
+  var Token = '006c5971380084649549b2af1d70a36c2d2IAAYkiOiBA5SjY8lso60pT1CLi2JZ4bIJoTXM8Bj4A7/O5QcH3YAAAAAEADmp+kb3whxYQEAAQDfCHFh';
+  bool _joined = false;
+  bool _switch = false;
+
   @override
   void initState() {
     super.initState();
     startTimmer();
-    print(widget.name+" name");
-    initAgora();
+    print("AgoraToken "+widget.agoraToken);
+   // initAgora();
+    initPlatformState();
   }
 
 
@@ -68,6 +75,58 @@ class _DialScreenState extends State<DialScreen> {
     );
 
   }
+
+
+  Future<void> initPlatformState() async {
+    // Get microphone permission
+    await [Permission.microphone].request();
+
+    // Create RTC client instance
+    RtcEngineContext contextt = RtcEngineContext(appId);
+    _engine = await RtcEngine.createWithContext(contextt);
+    // Define event handling logic
+    _engine.setEventHandler(RtcEngineEventHandler(
+        joinChannelSuccess: (String channel, int uid, int elapsed) {
+          print('joinChannelSuccess ${channel} ${uid}');
+          setState(() {
+            _joined = true;
+          });
+        }, userJoined: (int uid, int elapsed) {
+      print('userJoined ${uid}');
+      setState(() {
+        _remoteUid = uid;
+      });
+    }, userOffline: (int uid, UserOfflineReason reason) {
+      print('userOffline ${uid}');
+
+      if(_engine!=null) {
+        _engine.destroy();
+      }
+      Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context)=> HomeNav()));
+
+      setState(() {
+        _remoteUid = 0;
+      });
+    },
+      leaveChannel: (RtcStats reason) {
+        print("remote user left channel");
+        if(_engine!=null) {
+          _engine.destroy();
+        }
+        Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context)=> HomeNav()));
+
+        //Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context)=> HomeNav()));
+
+
+      },
+
+
+    ));
+    // Join channel with channel name as 123
+    await _engine.joinChannel(widget.agoraToken, widget.channel, null, 0);
+  }
+
+
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
@@ -96,17 +155,23 @@ class _DialScreenState extends State<DialScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   RoundedButton(
-                    press: () {},
+                    press: () {
+                      if(_engine.isSpeakerphoneEnabled()==true){
+                        _engine.setEnableSpeakerphone(false);
+                      }else{
+                        _engine.setEnableSpeakerphone(true);
+                      }
+                    },
                     iconSrc: "assets/Icon Mic.svg",
                   ),
 
                   RoundedButton(
                     press: () {
-                      setState(() {
-                        pickCall = false;
-                        _timmerInstance.cancel();
-                        Navigator.pop(context);
-                      });
+                      pickCall = false;
+                      _timmerInstance.cancel();
+                      _engine.leaveChannel();
+                      _engine.destroy();
+                      Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context)=> HomeNav()));
                     },
                     color: kRedColor,
                     iconColor: Colors.white,
@@ -114,7 +179,11 @@ class _DialScreenState extends State<DialScreen> {
                   ),
                   RoundedButton(
                     press: () {
-
+                      if(_engine.isSpeakerphoneEnabled()==true){
+                        _engine.setEnableSpeakerphone(false);
+                      }else{
+                        _engine.setEnableSpeakerphone(true);
+                      }
                     },
                     iconSrc: "assets/Icon Volume.svg",
                   ),
@@ -180,7 +249,8 @@ class _DialScreenState extends State<DialScreen> {
   @override
   void dispose() {
     _timmerInstance.cancel();
-    super.dispose();
+    _engine.destroy();
+    super.dispose() ;
   }
   void startTimmer() {
     var oneSec = Duration(seconds: 1);
@@ -272,6 +342,7 @@ class _BodyState extends State<Body> {
                     setState(() {
                       pickCall = false;
                       _timmerInstance.cancel();
+
                       Navigator.pop(context);
                     });
                   },

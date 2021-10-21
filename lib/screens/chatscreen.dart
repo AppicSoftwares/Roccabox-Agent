@@ -12,8 +12,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:roccabox_agent/agora/dialscreen/dialScreen.dart';
+import 'package:roccabox_agent/agora/videoCall/videoCall.dart';
 import 'package:roccabox_agent/screens/imageScreen.dart';
 import 'package:roccabox_agent/screens/videoScreen.dart';
+import 'package:roccabox_agent/services/APIClient.dart';
 import 'package:roccabox_agent/services/constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -135,13 +138,19 @@ class _ChatScreenState extends State<ChatScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        getAccessToken(widget.receiverId.toString(), "VOICE");
+
+                      },
                       icon: Icon(
                         Icons.phone,
                         color: Colors.black,
                       )),
                   IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        getAccessToken(widget.receiverId.toString(), "VIDEO");
+
+                      },
                       icon: Icon(
                         Icons.videocam_rounded,
                         color: Colors.black,
@@ -985,6 +994,58 @@ class _ChatScreenState extends State<ChatScreen> {
       });
     });
     message = "";
+  }
+  Future<dynamic> getAccessToken(String id, String type) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    var userid = pref.getString("id");
+
+    print("user_id "+userid.toString());
+    // print(email)
+        ;
+    var jsonRes;
+    http.Response? res;
+    var request = http.post(Uri.parse(RestDatasource.AGORATOKEN),
+        body: {
+
+          "type": type,
+          "user_id": userid.toString(),
+          "receiver_id": id
+
+
+        });
+
+    await request.then((http.Response response) {
+      res = response;
+
+      // msg = jsonRes["message"].toString();
+      // getotp = jsonRes["otp"];
+      // print(getotp.toString() + '123');t
+    });
+    if (res!.statusCode == 200) {
+      final JsonDecoder _decoder = new JsonDecoder();
+      jsonRes = _decoder.convert(res!.body.toString());
+      print("Response: " + res!.body.toString() + "_");
+      print("ResponseJSON: " + jsonRes.toString() + "_");
+
+
+      if(jsonRes["status"]==true){
+        var agoraToken = jsonRes["agora_token"].toString();
+        var channel = jsonRes["channelName"].toString();
+        var name = jsonRes["receiver"]["name"].toString();
+        var image = jsonRes["receiver"]["image"].toString();
+        if(type=="VIDEO"){
+          Navigator.push(context, new MaterialPageRoute(builder: (context)=> VideoCall(name:name ,image:image, channel: channel, token: agoraToken)));
+
+        }else{
+          Navigator.push(context, new MaterialPageRoute(builder: (context)=> DialScreen(name:name ,image:image, channel: channel, agoraToken: agoraToken)));
+
+        }
+
+      }
+
+    } else {
+
+    }
   }
 
 
