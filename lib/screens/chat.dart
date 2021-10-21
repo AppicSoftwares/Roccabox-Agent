@@ -127,7 +127,7 @@ class _ChatState extends State<Chat> {
                           image: listUser[index].image,
                           receiverId: listUser[index].id,
                           senderId: id,fcmToken: listUser[index].fcmToken,))),
-                leading:listUser[index].image==null  || listUser[index].image==""? CircleAvatar(
+                leading:listUser[index].image.toString()=="null"  || listUser[index].image==""? CircleAvatar(
                   backgroundImage: AssetImage('assets/img1.png'),
                 ):CircleAvatar(backgroundImage: NetworkImage(listUser[index].image.toString() )),
                 title: Text(

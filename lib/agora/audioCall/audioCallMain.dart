@@ -6,13 +6,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
-import 'package:roccabox_agent/agora/callModel.dart';
 import 'package:roccabox_agent/agora/component/roundedButton.dart';
-import 'package:roccabox_agent/agora/sizeConfig.dart';
+import 'package:roccabox_agent/agora/dialscreen/dialScreen.dart';
+import 'package:roccabox_agent/agora/videoCall/videoCall.dart';
 import 'package:roccabox_agent/screens/homenav.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../callModel.dart';
 import '../constants.dart';
+import '../sizeConfig.dart';
 
 
 class AudioCallWithImage extends StatefulWidget {
@@ -106,7 +108,7 @@ class _BodyState extends State<Body> {
 
   @override
   void dispose() {
-    _timmerInstance.cancel();
+    // _timmerInstance.cancel();
 
     super.dispose();
   }
@@ -189,7 +191,19 @@ class _BodyState extends State<Body> {
                         press: () {
                           setState(() {
                             FlutterRingtonePlayer.stop();
-                            startTimmer();
+                            //startTimmer();
+                            print("argsToken "+ args.agoraToken.toString()+"");
+                            if(args.type=="VOICE"){
+                              Navigator.push(context, new MaterialPageRoute(
+                                  builder: (context) =>
+                                      DialScreen(channel: args.channelName,
+                                          agoraToken: args.agoraToken, image: args.sender_image,name: args.sender_name,)));
+                            }else {
+                              Navigator.push(context, new MaterialPageRoute(
+                                  builder: (context) =>
+                                      VideoCall(channel: args.channelName,
+                                          token: args.agoraToken)));
+                            }
                             pickCall = !pickCall;
                           });
                         },
@@ -287,9 +301,9 @@ class _BodyState extends State<Body> {
 
   void getData()async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-      id = pref.getString("id").toString();
-      name = pref.getString("name").toString();
-      image = pref.getString("image").toString();
+    id = pref.getString("id").toString();
+    name = pref.getString("name").toString();
+    image = pref.getString("image").toString();
 
   }
 

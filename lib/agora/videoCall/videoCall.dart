@@ -22,6 +22,8 @@ class _MyAppState extends State<VideoCall> {
   bool _localUserJoined = false;
   late RtcEngine _engine;
   bool visibility = false;
+  bool isMute = false;
+  bool isSpeakerOn = false;
   @override
   void initState() {
     super.initState();
@@ -118,10 +120,20 @@ class _MyAppState extends State<VideoCall> {
                   children: [
                     RoundedButton(
                       press: () {
+                        setState(() {
 
+                          if(isMute==true){
+                            _engine.muteLocalAudioStream(false);
+                            isMute = false;
+                          }else{
+                            _engine.muteLocalAudioStream(true);
+                            isMute = true;
+                          }
+                        });
                       },
-                      iconSrc: "assets/Icon Mic.svg",
+                      iconSrc: !isMute?"assets/mute.svg":"assets/Icon Mic.svg",
                     ),
+
                     SizedBox(width: 30,),
                     RoundedButton(
                       press: () {
@@ -137,9 +149,21 @@ class _MyAppState extends State<VideoCall> {
                     SizedBox(width: 30,),
                     RoundedButton(
                       press: () {
+                        _engine.isSpeakerphoneEnabled().then((value){
+                          print(value.toString());
+                          setState(() {
+                            if(value.toString()=="true"){
+                              _engine.setEnableSpeakerphone(false);
+                              isSpeakerOn =false;
+                            }else{
+                              _engine.setEnableSpeakerphone(true);
+                              isSpeakerOn = true;
+                            }
+                          });
 
+                        });
                       },
-                      iconSrc: "assets/Icon Volume.svg",
+                      iconSrc: !isSpeakerOn? "assets/Icon Volume.svg":"assets/speaker_off.svg",
                     ),
                   ],
                 ),

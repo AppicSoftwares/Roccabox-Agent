@@ -111,7 +111,7 @@ class _MyAppState extends State<MyApp> {
 
           print("map " + map.toString());
           print("id " + map["id"]);
-          if (map["screen"] == "VIDEO_SCREEN") {
+          if (map["screen"] == "VIDEO_SCREEN" || map['screen']=="VOICE_SCREEN") {
             navigatorKey.currentState!.pushReplacementNamed('/call_received',
                 arguments: CallModel(
                     map["sender_image"],
@@ -121,7 +121,7 @@ class _MyAppState extends State<MyApp> {
                     map["sender_fcm"],
                     map["sender_id"],
                     map["sender_name"],
-                    map["agoraToken"]));
+                    map["token"]));
           } else {
             if (chatUser == null) {
               createListMap(map);
@@ -180,8 +180,15 @@ class _MyAppState extends State<MyApp> {
             print("Screennnnn "+map.toString());
           }
 
-          if(map["screen"]=="VIDEO_SCREEN"){
-            navigatorKey.currentState!.pushReplacementNamed('/call_received', arguments: CallModel(map["sender_image"], map["channelName"], map["time"],  map["type"], map["sender_fcm"], map["sender_id"], map["sender_name"], map["agoraToken"]));
+          if(map["screen"]=="VIDEO_SCREEN" || map['screen']=="VOICE_SCREEN"){
+            navigatorKey.currentState!.pushReplacementNamed('/call_received', arguments: CallModel(  map["sender_image"],
+                map["channelName"],
+                map["time"],
+                map["type"],
+                map["sender_fcm"],
+                map["sender_id"],
+                map["sender_name"],
+                map["token"]));
 
           }else{
           if(chatUser==null) {
@@ -237,7 +244,14 @@ class _MyAppState extends State<MyApp> {
         if(message.data!=null){
           map = message.data;
           if(map['screen']=="VIDEO_SCREEN"){
-            navigatorKey.currentState!.pushReplacementNamed('/call_received', arguments: CallModel(map["sender_image"], map["channelName"], map["time"],  map["type"], map["sender_fcm"], map["sender_id"], map["sender_name"], map["agoraToken"]));
+            navigatorKey.currentState!.pushReplacementNamed('/call_received', arguments: CallModel(  map["sender_image"],
+                map["channelName"],
+                map["time"],
+                map["type"],
+                map["sender_fcm"],
+                map["sender_id"],
+                map["sender_name"],
+                map["token"]));
 
           }else {
             createList(notification);
@@ -261,7 +275,7 @@ class _MyAppState extends State<MyApp> {
         });*/
       }else if(message.data!=null){
         Map<String, dynamic> map = message.data;
-        if(map['screen']=="VIDEO_SCREEN"){
+        if(map['screen']=="VIDEO_SCREEN" || map['screen']=="VOICE_SCREEN"){
           navigatorKey.currentState!.pushReplacementNamed('/call_received', arguments: CallModel(map["sender_image"], map["channelName"], map["time"],  map["type"], map["sender_fcm"], map["sender_id"], map["sender_name"], map["agoraToken"]));
 
         }else{

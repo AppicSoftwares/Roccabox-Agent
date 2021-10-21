@@ -32,12 +32,13 @@ class _DialScreenState extends State<DialScreen> {
   var Token = '006c5971380084649549b2af1d70a36c2d2IAAYkiOiBA5SjY8lso60pT1CLi2JZ4bIJoTXM8Bj4A7/O5QcH3YAAAAAEADmp+kb3whxYQEAAQDfCHFh';
   bool _joined = false;
   bool _switch = false;
-
+  bool isSpeakerOn = false;
+  bool isMute = false;
   @override
   void initState() {
     super.initState();
     startTimmer();
-    print("AgoraToken "+widget.agoraToken);
+    print("AgoraTokenDial "+widget.agoraToken.toString()+"");
    // initAgora();
     initPlatformState();
   }
@@ -156,13 +157,15 @@ class _DialScreenState extends State<DialScreen> {
                 children: [
                   RoundedButton(
                     press: () {
-                      if(_engine.isSpeakerphoneEnabled()==true){
-                        _engine.setEnableSpeakerphone(false);
+                      if(isMute==true){
+                        _engine.enableAudio();
+                        isMute = false;
                       }else{
-                        _engine.setEnableSpeakerphone(true);
+                        _engine.disableAudio();
+                        isMute = true;
                       }
                     },
-                    iconSrc: "assets/Icon Mic.svg",
+                    iconSrc: !isMute?"assets/mute.svg":"assets/Icon Mic.svg",
                   ),
 
                   RoundedButton(
@@ -179,13 +182,22 @@ class _DialScreenState extends State<DialScreen> {
                   ),
                   RoundedButton(
                     press: () {
-                      if(_engine.isSpeakerphoneEnabled()==true){
-                        _engine.setEnableSpeakerphone(false);
-                      }else{
-                        _engine.setEnableSpeakerphone(true);
-                      }
+                      _engine.isSpeakerphoneEnabled().then((value){
+                        print(value.toString());
+                        setState(() {
+                          if(value.toString()=="true"){
+                            _engine.setEnableSpeakerphone(false);
+                            isSpeakerOn = false;
+                          }else{
+                            _engine.setEnableSpeakerphone(true);
+                            isSpeakerOn = true;
+                          }
+                        });
+
+                      });
+
                     },
-                    iconSrc: "assets/Icon Volume.svg",
+                    iconSrc: !isSpeakerOn? "assets/Icon Volume.svg":"assets/speaker_off.svg",
                   ),
                 ],
               ),
