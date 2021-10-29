@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/src/provider.dart';
@@ -31,12 +32,20 @@ class _CallState extends State<Calls> {
   final firestoreInstance = FirebaseFirestore.instance;
   List<UserList> listUser = [];
   var id ;
-
+  var myName ;
+  var myImage ;
+  FirebaseMessaging? auth;
+  var myFcm;
   @override
   void initState() {
     getData();
 
-    WidgetsBinding.instance!
+    auth = FirebaseMessaging.instance;
+    auth?.getToken().then((value) {
+      print("FirebaseToken " + value.toString());
+      myFcm = value.toString();
+    }
+    );    WidgetsBinding.instance!
         .addObserver(LifecycleEventHandler(resumeCallBack: () async {
       print("Invoke");
     }));
@@ -150,7 +159,6 @@ class _CallState extends State<Calls> {
                                 onPressed: () {
                                   getAccessToken(listUser[index].id.toString(), "VIDEO");
 
-
                                 },
                                 icon: Icon(
                                   Icons.videocam_rounded,
@@ -187,6 +195,8 @@ class _CallState extends State<Calls> {
   void getData() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     id = pref.getString("id").toString();
+    myName = pref.getString("name").toString();
+    myImage = pref.getString("image").toString();
     notiCount = pref.getString("notify")!;
     setState(() {});
   }
@@ -208,7 +218,8 @@ class _CallState extends State<Calls> {
 
           "type": type,
           "user_id": userid.toString(),
-          "receiver_id": id
+          "receiver_id": id,
+          "time": DateTime.now().millisecondsSinceEpoch.toString()
 
 
         });
@@ -232,17 +243,71 @@ class _CallState extends State<Calls> {
         var channel = jsonRes["channelName"].toString();
         var name = jsonRes["receiver"]["name"].toString();
         var image = jsonRes["receiver"]["image"].toString();
-        if(type=="VIDEO"){
-          Navigator.push(context, new MaterialPageRoute(builder: (context)=> VideoCall(name:name ,image:image, channel: channel, token: agoraToken)));
-
-        }else{
-          Navigator.push(context, new MaterialPageRoute(builder: (context)=> DialScreen(name:name ,image:image, channel: channel, agoraToken: agoraToken)));
-
-        }
+        var time = jsonRes["time"].toString();
+        var fcm = jsonRes["receiver"]["firebase_token"].toString();
+        updateChatHead(userid.toString(),name, image, type, fcm, id, "Calling", agoraToken, channel, time);
 
       }
 
     } else {
+
+    }
+  }
+
+
+
+  void updateChatHead(String userid, String name, String image, String type, String fcmToken,String idd, String status, String agoraToken, String channel, String time) async {
+
+    var documentReference = FirebaseFirestore.instance
+        .collection('call_master')
+        .doc("call_head")
+        .collection(userid)
+        .doc(time);
+
+
+    firestoreInstance.runTransaction((transaction) async {
+      transaction.set(
+        documentReference,
+        {
+          'fcmToken': fcmToken,
+          'id': idd,
+          'image': image,
+          'name': name,
+          'timestamp': time,
+          'type': type,
+          'callType':"incoming",
+          'status': status
+
+        },
+      );
+    }).then((value) {
+      var documentReference = FirebaseFirestore.instance
+          .collection('call_master')
+          .doc("call_head")
+          .collection(idd)
+          .doc(time);
+
+      firestoreInstance.runTransaction((transaction) async {
+        transaction.set(
+          documentReference,
+          {
+            'fcmToken': myFcm,
+            'id': userid,
+            'image': myImage,
+            'name': myName,
+            'timestamp': time,
+            'type': type,
+            'callType':"outgoing",
+            'status':status
+          },
+        );
+      });
+    });
+    if(type=="VIDEO"){
+      Navigator.push(context, new MaterialPageRoute(builder: (context)=> VideoCall(name:name ,image:image, channel: channel, token: agoraToken, myId: userid.toString(),time: time, senderId: idd,)));
+
+    }else{
+      Navigator.push(context, new MaterialPageRoute(builder: (context)=> DialScreen(name:name ,image:image, channel: channel, agoraToken: agoraToken,myId: userid.toString(),time: time)));
 
     }
   }
@@ -283,7 +348,6 @@ class Count extends StatelessWidget {
       ),
     );
   }
-
 
 
 

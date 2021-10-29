@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:roccabox_agent/agora/dialscreen/dialScreen.dart';
 import 'package:roccabox_agent/agora/videoCall/videoCall.dart';
@@ -26,7 +28,25 @@ AssignedUsersScreen({Key? key,  required this.totalUserList})
 class _TotalUserScreenState extends State<AssignedUsersScreen> {
 
   bool isloading = false;
-    
+  final firestoreInstance = FirebaseFirestore.instance;
+  var myimage = "";
+  var myname = "";
+  var myFcm = "";
+  FirebaseMessaging? auth;
+
+
+
+  @override
+  void initState() {
+
+    super.initState();
+    auth = FirebaseMessaging.instance;
+    auth?.getToken().then((value) {
+      print("FirebaseToken " + value.toString());
+      myFcm = value.toString();
+    }
+    );
+  }
   @override
   Widget build(BuildContext context) {
     print(widget.totalUserList.length.toString());
@@ -113,6 +133,63 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
   }
 
 
+  void updateChatHead(String userid, String name, String image, String type, String fcmToken,String idd, String status, String agoraToken, String channel, String time) async {
+
+    var documentReference = FirebaseFirestore.instance
+        .collection('call_master')
+        .doc("call_head")
+        .collection(userid)
+        .doc(time);
+
+
+    firestoreInstance.runTransaction((transaction) async {
+      transaction.set(
+        documentReference,
+        {
+          'fcmToken': fcmToken,
+          'id': idd,
+          'image': image,
+          'name': name,
+          'timestamp': time,
+          'type': type,
+          'callType':"incoming",
+          'status': status
+
+        },
+      );
+    }).then((value) {
+      var documentReference = FirebaseFirestore.instance
+          .collection('call_master')
+          .doc("call_head")
+          .collection(idd)
+          .doc(time);
+
+      firestoreInstance.runTransaction((transaction) async {
+        transaction.set(
+          documentReference,
+          {
+            'fcmToken': myFcm,
+            'id': userid,
+            'image': myimage,
+            'name': myname,
+            'timestamp': time,
+            'type': type,
+            'callType':"outgoing",
+            'status':status
+          },
+        );
+      });
+    });
+    if(type=="VIDEO"){
+      Navigator.push(context, new MaterialPageRoute(builder: (context)=> VideoCall(name:name ,image:image, channel: channel, token: agoraToken, myId: userid.toString(),time:time, senderId: idd,)));
+
+    }else{
+      Navigator.push(context, new MaterialPageRoute(builder: (context)=> DialScreen(name:name ,image:image, channel: channel, agoraToken: agoraToken,myId: userid.toString(),time: time )));
+
+    }
+  }
+
+
 
 
   Future<dynamic> getAccessToken(String id, String type) async {
@@ -129,7 +206,8 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
 
           "type": type,
           "user_id": userid.toString(),
-          "receiver_id": id
+          "receiver_id": id,
+          "time":DateTime.now().millisecondsSinceEpoch.toString()
 
 
         });
@@ -153,13 +231,9 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
         var channel = jsonRes["channelName"].toString();
         var name = jsonRes["receiver"]["name"].toString();
         var image = jsonRes["receiver"]["image"].toString();
-        if(type=="VIDEO"){
-          Navigator.push(context, new MaterialPageRoute(builder: (context)=> VideoCall(name:name ,image:image, channel: channel, token: agoraToken)));
-
-        }else{
-          Navigator.push(context, new MaterialPageRoute(builder: (context)=> DialScreen(name:name ,image:image, channel: channel, agoraToken: agoraToken)));
-
-        }
+        var time = jsonRes["time"].toString();
+        var fcm = jsonRes["receiver"]["firebase_token"].toString();
+        updateChatHead(userid.toString(),name, image, type, fcm, id, "Calling", agoraToken, channel, time);
 
       }
 

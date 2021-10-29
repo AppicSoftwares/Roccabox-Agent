@@ -14,6 +14,7 @@ import 'package:roccabox_agent/screens/homenav.dart';
 import 'package:roccabox_agent/screens/notifications.dart';
 import 'package:roccabox_agent/services/modelProvider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart';
 
 import 'screens/splash.dart';
 
@@ -43,11 +44,21 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin
 
 Future<void> backgroundMessagehandler(RemoteMessage message) async {
   await Firebase.initializeApp();
+  Map<String, dynamic>map = message.data;
+  print("Map "+map.toString());
+  var screeen = map["screen"];
+  if(screeen=="VIDEO_SCREEN"|| screeen == "VOICE_SCREEN"){
+    Future.delayed(Duration(seconds: 15), () async{
+      await flutterLocalNotificationsPlugin.cancelAll();
+    });
+  }
 }
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
 
   FirebaseMessaging.onBackgroundMessage(backgroundMessagehandler);
@@ -100,18 +111,23 @@ class _MyAppState extends State<MyApp> {
 
     //fetchLocation();
     FirebaseMessaging.onMessage.listen((RemoteMessage message){
-      print('Running On Message');
+      print('Running On Message'+message.data.toString()+"");
+      print('Running On notification'+message.notification.toString()+"");
       print('CurrentInstance '+currentInstance.toString()+"");
-
 
       Map<String, dynamic>map;
       if(message.notification==null){
         if(message.data!=null) {
           map = message.data;
 
-          print("map " + map.toString());
-          print("id " + map["id"]);
+       /*   print("map " + map.toString());
+          print("id " + map["sender_id"]);
+        */
+
           if (map["screen"] == "VIDEO_SCREEN" || map['screen']=="VOICE_SCREEN") {
+            Future.delayed(Duration(seconds: 15), () async{
+              await flutterLocalNotificationsPlugin.cancelAll();
+            });
             navigatorKey.currentState!.pushReplacementNamed('/call_received',
                 arguments: CallModel(
                     map["sender_image"],
@@ -181,6 +197,9 @@ class _MyAppState extends State<MyApp> {
           }
 
           if(map["screen"]=="VIDEO_SCREEN" || map['screen']=="VOICE_SCREEN"){
+            Future.delayed(Duration(seconds: 15), () async{
+              await flutterLocalNotificationsPlugin.cancelAll();
+            });
             navigatorKey.currentState!.pushReplacementNamed('/call_received', arguments: CallModel(  map["sender_image"],
                 map["channelName"],
                 map["time"],
@@ -239,19 +258,25 @@ class _MyAppState extends State<MyApp> {
       RemoteNotification? notification = message.notification;
       AndroidNotification? androidNotification = message.notification!.android;
 
-      if(notification!=null && androidNotification !=null){
+      if(notification!=null){
         Map<String, dynamic> map = message.data;
         if(message.data!=null){
           map = message.data;
-          if(map['screen']=="VIDEO_SCREEN"){
-            navigatorKey.currentState!.pushReplacementNamed('/call_received', arguments: CallModel(  map["sender_image"],
+          print("Mappp "+map.toString());
+          if(map['screen']=="VIDEO_SCREEN" || map['screen']=="VOICE_SCREEN"){
+            Future.delayed(Duration(seconds: 15), () async{
+              await flutterLocalNotificationsPlugin.cancelAll();
+            });
+            navigatorKey.currentState!.pushReplacementNamed('/call_received', arguments: CallModel(
+                map["sender_image"],
                 map["channelName"],
                 map["time"],
                 map["type"],
                 map["sender_fcm"],
                 map["sender_id"],
                 map["sender_name"],
-                map["token"]));
+                map["token"]
+            ));
 
           }else {
             createList(notification);
