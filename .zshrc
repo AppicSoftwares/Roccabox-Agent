@@ -1,0 +1,1 @@
+LNG=en_US.UTF-8

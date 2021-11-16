@@ -31,6 +31,7 @@ class _CallState extends State<Calls> {
   List<QueryDocumentSnapshot> listUsers = new List.from([]);
   final firestoreInstance = FirebaseFirestore.instance;
   List<UserList> listUser = [];
+  List<UserList> listUserrev = [];
   var id ;
   var myName ;
   var myImage ;
@@ -114,6 +115,7 @@ class _CallState extends State<Calls> {
                     AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (snapshot.hasData) {
                     listUser.clear();
+                    listUserrev.clear();
                     snapshot.data?.docs.forEach((element) {
                       var json;
                       UserList model = new UserList();
@@ -129,8 +131,9 @@ class _CallState extends State<Calls> {
                       model.timestamp = json["timestamp"].toString();
                       model.fcmToken = json["fcmToken"].toString();
 
-                      listUser.add(model);
+                      listUserrev.add(model);
                     });
+                    listUser = listUserrev.reversed.toList();
                   }
 
                   return ListView.separated(
@@ -307,7 +310,7 @@ class _CallState extends State<Calls> {
       Navigator.push(context, new MaterialPageRoute(builder: (context)=> VideoCall(name:name ,image:image, channel: channel, token: agoraToken, myId: userid.toString(),time: time, senderId: idd,)));
 
     }else{
-      Navigator.push(context, new MaterialPageRoute(builder: (context)=> DialScreen(name:name ,image:image, channel: channel, agoraToken: agoraToken,myId: userid.toString(),time: time)));
+      Navigator.push(context, new MaterialPageRoute(builder: (context)=> DialScreen(name:name ,image:image, channel: channel, agoraToken: agoraToken,myId: userid.toString(),time: time,receiverId: idd,)));
 
     }
   }

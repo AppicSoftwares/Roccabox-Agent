@@ -12,6 +12,7 @@ import 'package:roccabox_agent/agora/callModel.dart';
 import 'package:roccabox_agent/screens/chatscreen.dart';
 import 'package:roccabox_agent/screens/homenav.dart';
 import 'package:roccabox_agent/screens/notifications.dart';
+import 'package:roccabox_agent/services/ModelNotification.dart';
 import 'package:roccabox_agent/services/modelProvider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
@@ -352,6 +353,7 @@ class _MyAppState extends State<MyApp> {
     List<String>? titleList = preferences.getStringList('titleList');
     List<String>? bodyList = preferences.getStringList('bodyList');
     List<String>? isReadList = preferences.getStringList('isRead');
+
     // List<String> timeList = preferences.getStringList('timeList');
     if(titleList!=null && bodyList!=null && isReadList!=null){
       titleList.add(notification.title.toString());

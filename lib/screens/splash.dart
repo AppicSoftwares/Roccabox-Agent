@@ -2,15 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:roccabox_agent/screens/home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../main.dart';
 import 'homenav.dart';
 import 'login.dart';
-import 'notifications.dart';
 
 class Splash extends StatefulWidget {
   @override
@@ -22,6 +18,7 @@ class _SplashState extends State<Splash> {
   FirebaseMessaging? auth;
   var token;
   final firestoreInstance = FirebaseFirestore.instance;
+ // final databaseRef = FirebaseDatabase.instance.reference(); //database reference object
 
   @override
   void initState() {
@@ -65,7 +62,12 @@ class _SplashState extends State<Splash> {
           },
         );
       });
+      
+ /*     databaseRef.push().set({id:token}).then((value) {
+        print("RunningRelatime "+"true");
+      });*/
     }
+    
     Future.delayed(Duration(seconds: 2), () {
       id.toString() == "" || id.toString() == "null" || id == null
           ? Navigator.pushReplacement(

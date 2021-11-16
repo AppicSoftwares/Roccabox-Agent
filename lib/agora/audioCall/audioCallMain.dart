@@ -55,7 +55,7 @@ class _BodyState extends State<Body> {
   late String myToken;
   FirebaseMessaging? auth;
   final firestoreInstance = FirebaseFirestore.instance;
-
+  bool isLoading = true;
   late RtcEngine _engine;
   bool _joined = false;
   bool _switch = false;
@@ -205,7 +205,15 @@ class _BodyState extends State<Body> {
 
     }
     );
-    FlutterRingtonePlayer.playRingtone(looping: true);
+    Future.delayed(Duration(seconds: 2), () async{
+
+      setState(() {
+        isLoading = false;
+
+        FlutterRingtonePlayer.playRingtone(looping: true);
+      });
+
+    });
 
     Future.delayed(Duration(seconds: 15), () async{
       if(_joined==false){
@@ -217,6 +225,7 @@ class _BodyState extends State<Body> {
       }
 
     });
+
 
   }
 
@@ -232,7 +241,7 @@ class _BodyState extends State<Body> {
     print(args.sender_id.toString());
     print(args.sender_name.toString());
     print("Callerimage  "+args.sender_image.toString());
-    id = args.sender_id.toString();
+
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -272,11 +281,11 @@ class _BodyState extends State<Body> {
         Padding(
           padding: const EdgeInsets.all(20.0),
           child: SafeArea(
-            child: StreamBuilder<DocumentSnapshot>(
+            child:  isLoading== true?Center(child: CircularProgressIndicator(),): StreamBuilder<DocumentSnapshot>(
                 stream: firestoreInstance
                     .collection("call_master")
                     .doc("call_head")
-                    .collection(args.sender_id)
+                    .collection(id)
                     .doc(args.time)
                     .snapshots(),
                 builder: (BuildContext context,
@@ -284,7 +293,17 @@ class _BodyState extends State<Body> {
                   if(snapshot.hasData){
                     var json;
                     json= snapshot.data!.get("status").toString();
-                    print("Status "+json.toString());
+                    print("StatusAudioCallMain "+json.toString());
+                    if(json.toString()!="null"){
+                      if(json.toString()=="end"){
+                        WidgetsBinding.instance!.addPostFrameCallback((_){
+                          FlutterRingtonePlayer.stop();
+                          Navigator.of(context).pushReplacement(
+                              new MaterialPageRoute(builder: (context) => HomeNav()));
+
+                        });
+                      }
+                    }
 
 
                   }

@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:roccabox_agent/agora/dialscreen/dialScreen.dart';
 import 'package:roccabox_agent/agora/videoCall/videoCall.dart';
 import 'package:roccabox_agent/screens/imageScreen.dart';
@@ -36,11 +37,11 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final firestoreInstance = FirebaseFirestore.instance;
   List<QueryDocumentSnapshot> listMessage = new List.from([]);
+  List<MessageList> listMessage2 = new List.from([]);
   final ScrollController listScrollController = ScrollController();
   TextEditingController _textEditingController = new TextEditingController();
   final FocusNode focusNode = FocusNode();
   var message = "";
-  var msg = "";
   int _limit = 20;
   int _limitIncrement = 20;
   
@@ -56,6 +57,7 @@ class _ChatScreenState extends State<ChatScreen> {
   User? user;
   bool sendimage = false;
   late VideoPlayerController _controller;
+//  final databaseRef = FirebaseDatabase.instance.reference(); //database reference object
 
   @override
   void initState() {
@@ -197,6 +199,287 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
     );
   }
+/*
+  Widget buildListMessage() {
+    return Flexible(
+      child: widget.senderId != null && widget.receiverId != null
+          ? StreamBuilder(
+        stream: databaseRef.child("chat_master")
+        .child("message_list")
+        .child(widget.senderId)
+        .child(widget.receiverId)
+        .onValue,
+        builder: (BuildContext context,
+            AsyncSnapshot<Event> snapshot) {
+          if (snapshot.hasData) {
+            listMessage2.clear();
+            if(snapshot.data?.snapshot.value!=null){
+              Map<Object?, Object?> map = snapshot.data?.snapshot.value;
+              print("listMap"+map.toString());
+
+              map.forEach((key, value) {
+                MessageList list = MessageList();
+                list.timeStamp = key.toString();
+                Map<Object?, Object?> childMap = value as Map<Object?, Object?>;
+                print("childMapp "+childMap.toString());
+
+
+                childMap.forEach((key, value) {
+                  print("valueee "+childMap["content"].toString());
+
+                  Messages messages = Messages();
+                  messages.content = childMap["content"].toString();
+                  messages.idFrom = childMap["idFrom"].toString();
+                  messages.idTo = childMap["idTo"].toString();
+                  messages.timestamp = childMap["timestamp"].toString();
+                  messages.type = childMap["type"].toString();
+                  list.message = messages;
+                });
+
+                listMessage2.add(list);
+
+
+                print("MessageLength "+listMessage2.length.toString());
+                print("MessageContent "+listMessage2[0].message!.content);
+
+              });
+
+            }
+            List<MessageList> listMessage3 = listMessage2.reversed.toList();
+
+            // listMessage2.addAll(snapshot.data?.snapshot.value);
+            return chatMessage(listMessage3);
+            //  return ListView.builder(
+            //    padding: EdgeInsets.all(10.0),
+            //    itemBuilder: (context, index) => buildItem(index, snapshot.data?.docs[index]),
+            //    itemCount: snapshot.data?.docs.length,
+            //    reverse: true,
+            //    controller: listScrollController,
+            //  );
+          } else {
+            return Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFFBA00)),
+                ));
+          }
+        },
+      )
+          : Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFFBA00)),
+        ),
+      ),
+    );
+  }
+*/
+/*
+  Widget chatMessage(List<MessageList> listMessage) {
+    print("SizeofList " + listMessage.length.toString() + "");
+
+    return ListView.builder(
+      itemCount: listMessage.length,
+      reverse: true,
+      itemBuilder: (BuildContext context, int index) {
+
+        return
+
+        Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Column(
+            crossAxisAlignment:
+            listMessage2[index].message?.idFrom.toString() == widget.senderId
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.start,
+            children: [
+          listMessage2[index].message?.type=="document"?GestureDetector(
+                onTap: (){
+                  if(listMessage2[index].message?.content!=null){
+                    if(listMessage2[index].message?.content!=""){
+                      print("OnTap Document");
+                      Navigator.push(context, new MaterialPageRoute(builder: (context) => DocumentScreen(path: listMessage2[index].message!.content,)));
+
+                    }
+                  }
+                },
+                child: Material(
+                  borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(30.0),
+                      bottomRight: Radius.circular(30.0),
+                      topLeft: listMessage2[index].message?.idFrom.toString() ==
+                          widget.senderId
+                          ? Radius.circular(30.0)
+                          : Radius.circular(0.0),
+                      topRight: listMessage2[index].message?.idFrom.toString() ==
+                          widget.senderId
+                          ? Radius.circular(0)
+                          : Radius.circular(30.0)),
+                  elevation: 5.0,
+                  color: listMessage2[index].message?.idFrom.toString() != widget.senderId
+                      ? Colors.blueAccent
+                      : kPrimaryColor,
+                  child:Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Container(
+                            height: 50,
+                            width: 50,
+                            child:Image.asset("assets/doc_icon.png")
+
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Container(
+                            child:Text("Document", style: TextStyle(color:Colors.white),)
+
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+
+
+                  : listMessage2[index].message!.type=="video"?GestureDetector(
+                  onTap: (){
+                    if(listMessage2[index].message!.content!=null){
+                      if(listMessage2[index].message!.content!=""){
+                        Navigator.push(context, new MaterialPageRoute(builder: (context) => VideoScreen(video: listMessage2[index].message!.content,)));
+
+                      }
+                    }
+                  },
+                  child:Material(
+                    borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(30.0),
+                        bottomRight: Radius.circular(30.0),
+                        topLeft: listMessage2[index].message?.idFrom.toString() ==
+                            widget.senderId
+                            ? Radius.circular(30.0)
+                            : Radius.circular(0.0),
+                        topRight: listMessage2[index].message?.idFrom.toString() ==
+                            widget.senderId
+                            ? Radius.circular(0)
+                            : Radius.circular(30.0)),
+                    elevation: 5.0,
+                    color: listMessage2[index].message?.idFrom.toString() != widget.senderId
+                        ? Colors.blueAccent
+                        : kPrimaryColor,
+                    child:Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                              height: 50,
+                              width: 50,
+                              child:Image.asset("assets/play.png")
+
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                              child:Text("Video", style: TextStyle(color:Colors.white),)
+
+                          ),
+                        ),
+                      ],
+                    ),
+                  )): listMessage2[index].message!.type=="image"?GestureDetector(
+                onTap: (){
+                  if(listMessage2[index].message!.content!=null){
+                    if(listMessage2[index].message!.content!=""){
+                      Navigator.push(context, new MaterialPageRoute(builder: (context) => ImageScreen(image: listMessage2[index].message!.content,)));
+
+                    }
+                  }
+                },
+                child: Container(
+                  child: Material(
+                    child: CachedNetworkImage(
+                      placeholder: (con, url ){
+                        return Image.asset(
+                          'assets/img_not_available.png',
+                          width: 200.0,
+                          height: 200.0,
+                          fit: BoxFit.fill,
+                        );
+                      },
+                      errorWidget:(con,url,error){
+                        return Material(
+                          child: Image.asset(
+                            'assets/img_not_available.png',
+                            width: 200.0,
+                            height: 200.0,
+                            fit: BoxFit.cover,
+                          ),
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(8.0),
+                          ),
+                        );
+                      },
+                      imageUrl: listMessage2[index].message!.content,
+                      width: 200.0,
+                      height: 200.0,
+                      fit: BoxFit.fill,
+                    ),
+                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                  ),
+                  margin: EdgeInsets.only(bottom:listMessage2[index].message?.idFrom.toString() != widget.senderId ? 20.0 : 10.0, right: 10.0),
+                ),
+              ):Material(
+                  borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(30.0),
+                      bottomRight: Radius.circular(30.0),
+                      topLeft: listMessage2[index].message?.idFrom.toString() ==
+                          widget.senderId
+                          ? Radius.circular(30.0)
+                          : Radius.circular(0.0),
+                      topRight: listMessage2[index].message?.idFrom.toString() ==
+                          widget.senderId
+                          ? Radius.circular(0)
+                          : Radius.circular(30.0)),
+                  elevation: 5.0,
+                  color: listMessage2[index].message?.idFrom.toString() != widget.senderId
+                      ? Colors.blueAccent
+                      : Color(0xffFFBA00),
+                  child: Padding(
+                    padding:
+                    EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+                    child:Text(
+                      listMessage2[index].message!.content,
+                      style: TextStyle(color: Colors.white, fontSize: 15),
+                    ),
+                  )),
+            ],
+          ),
+        );
+        // return Container(
+        //   padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
+        //   width: 200.0,
+        //   margin: EdgeInsets.only(
+        //       bottom:  10.0, right: 10.0),
+        //   decoration: BoxDecoration(
+        //     color: Colors.grey[100],
+        //     borderRadius: BorderRadius.circular(5),
+        //     boxShadow: [
+        //       BoxShadow(
+        //           color: Colors.black54,
+        //           offset: Offset(2, 3),
+        //           blurRadius: 10,
+        //           spreadRadius: 1)
+        //     ],
+        //   ),
+        //   child: Text("Hello World"),
+        // );
+      },
+    );
+  }
+*/
+
 
   Widget buildListMessage() {
     return Flexible(
@@ -237,6 +520,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
     );
   }
+
   Future getThumbnail(param0) async {
     _controller = VideoPlayerController.network(
         param0)
@@ -284,12 +568,15 @@ class _ChatScreenState extends State<ChatScreen> {
         });
   }
   Future getVideo() async {
+    await [Permission.storage].request();
 
     final pickedFile;
 
     pickedFile =  await ImagePicker.platform.getVideo(source: ImageSource.gallery);
 
     if (pickedFile != null) {
+      print("Running VideoPicking");
+
       imageFile = File(pickedFile.path.toString());
       if (imageFile != null) {
         setState(() {
@@ -302,6 +589,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
 
   Future uploadVideo() async {
+    print("Running");
     String fileName = DateTime.now().millisecondsSinceEpoch.toString();
     //  Reference reference = FirebaseStorage.instance.ref().child("images/");
     //  UploadTask uploadTask = reference.putFile(imageFile!);
@@ -337,7 +625,7 @@ class _ChatScreenState extends State<ChatScreen> {
       reverse: true,
       itemBuilder: (BuildContext context, int index) {
 
-        return Padding(
+        return docs[index].get("content")!=""?Padding(
           padding: const EdgeInsets.all(10.0),
           child: Column(
             crossAxisAlignment:
@@ -510,7 +798,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   )),
             ],
           ),
-        );
+        ):SizedBox(height: 0,);
         // return Container(
         //   padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
         //   width: 200.0,
@@ -611,22 +899,20 @@ class _ChatScreenState extends State<ChatScreen> {
                       height: 46,
                       width: 46,
                       decoration: BoxDecoration(
-                        color: kSecondaryColor.withOpacity(0.1),
+                        color: Colors.white.withOpacity(0.1),
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
                         icon: Icon(Icons.send),
                         onPressed: () {
-                          message = _textEditingController.text.toString().trim();
-                          if (_textEditingController.text
-                              .toString()
-                              .trim()
-                              .isNotEmpty && _textEditingController.text.toString().trim()!="") {
-
-                            msg = _textEditingController.text.toString().trim();
+                          //focusNode.unfocus();
+                        var  ss = _textEditingController.text.toString().trim();
+                         var aa = _textEditingController.text.toString().trim();
+                          _textEditingController.clear();
+                          if (ss.isNotEmpty && ss.toString()!="" && ss.toString()!="null") {
                             print("SenderId " + widget.senderId + "");
                             print("Id " + widget.receiverId + "");
-                            print("TextEdit " +message);
+                            print("TextEdit " +ss);
 
                             var documentReference = FirebaseFirestore.instance
                                 .collection('chat_master')
@@ -647,14 +933,14 @@ class _ChatScreenState extends State<ChatScreen> {
                                   'timestamp': DateTime.now()
                                       .millisecondsSinceEpoch
                                       .toString(),
-                                  'content': _textEditingController.text.toString().trim(),
+                                  'content':ss,
                                   'type': "text"
                                 },
                               );
                             }).then((value) {
-                              var s = _textEditingController.text.toString().trim();
-                              print("value " +s.toString());
-                              if(s!=null && s!="") {
+
+                              print("value " + aa.toString());
+                              if (aa != null && aa != "") {
                                 var documentReference = FirebaseFirestore
                                     .instance
                                     .collection('chat_master')
@@ -665,13 +951,13 @@ class _ChatScreenState extends State<ChatScreen> {
                                     .now()
                                     .millisecondsSinceEpoch
                                     .toString());
-
+                                print("MessageNow " + aa.toString());
                                 firestoreInstance
                                     .runTransaction((transaction) async {
                                   transaction.set(
                                     documentReference,
                                     {
-                                      'content': s.toString(),
+                                      'content': aa.toString(),
                                       'idFrom': widget.senderId,
                                       'idTo': widget.receiverId,
                                       'timestamp': DateTime
@@ -683,18 +969,22 @@ class _ChatScreenState extends State<ChatScreen> {
                                     },
                                   );
                                 });
-
-                                updateChatHead(message);
                               }
-                              _textEditingController.clear();
-                              focusNode.unfocus();
-                            });
-                            // listScrollController.animateTo(0.0,
-                            //     duration: Duration(milliseconds: 300),
-                            //     curve: Curves.easeOut);
 
-                            sendNotification(msg.toString());
+                              //updateSeccond(aa);
+
+                              updateChatHead(aa);
+
+                            });
+
+
+                           /*  listScrollController.animateTo(0.0,
+                                 duration: Duration(milliseconds: 300),
+                                 curve: Curves.easeOut);*/
+
+                            sendNotification(ss.toString());
                           }
+
 
 
                         },
@@ -725,61 +1015,156 @@ class _ChatScreenState extends State<ChatScreen> {
       //  decoration: BoxDecoration(border: Border(top: BorderSide(color: Colors.grey, width: 0.5)), color: Colors.white),
     );
   }
-
-  void updateChatHead(String s) async {
-    print("messageeee " + message + "");
- print("agentName " + name + "");
- print("username " + widget.name + "");
-    var documentReference = FirebaseFirestore.instance
+void updateSeccond(String msg) {
+  print("value " + msg.toString());
+  if (msg != null && msg != "") {
+    var documentReference = FirebaseFirestore
+        .instance
         .collection('chat_master')
-        .doc("chat_head")
-        .collection(widget.senderId)
-        .doc(widget.receiverId);
-    print("s " + s + "");
-
-    firestoreInstance.runTransaction((transaction) async {
+        .doc("message_list")
+        .collection(
+        widget.receiverId + "-" + widget.senderId)
+        .doc(DateTime
+        .now()
+        .millisecondsSinceEpoch
+        .toString());
+    print("MessageNow " + msg.toString());
+    firestoreInstance
+        .runTransaction((transaction) async {
       transaction.set(
         documentReference,
         {
+          'content': msg.toString(),
           'idFrom': widget.senderId,
           'idTo': widget.receiverId,
-          'msg': s.toString(),
-          'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
-          'type': "text",
-          'image': widget.image,
-          'agent': name,
-          'user': widget.name,
-          'clicked': "true",
-          'fcmToken': widget.fcmToken
+          'timestamp': DateTime
+              .now()
+              .millisecondsSinceEpoch
+              .toString(),
 
+          'type': "text"
         },
       );
-    }).then((value) {
-      var documentReference = FirebaseFirestore.instance
-          .collection('chat_master')
-          .doc("chat_head")
-          .collection(widget.receiverId)
-          .doc(widget.senderId);
-
-      firestoreInstance.runTransaction((transaction) async {
-        transaction.set(
-          documentReference,
-          {
-            'idFrom': widget.senderId,
-            'idTo': widget.receiverId,
-            'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
-            'msg': s.toString(),
-            'type': "text",
-            'image': image,
-            'agent': name,
-            'user': widget.name,
-            'clicked': "false",
-            'fcmToken': token
-          },
-        );
-      });
     });
-    message = "";
+  }
+}
+/*
+  Widget _getMessageList() {
+    return Expanded(
+      child: FirebaseAnimatedList(
+        controller: listScrollController,
+        query: databaseRef.child("chat_master").child("chat_head").child(widget.senderId).child(widget.receiverId),
+        itemBuilder: (context, snapshot, animation, index) {
+          final json = snapshot.value as Map<dynamic, dynamic>;
+          final message = Message.fromJson(json);
+          return MessageWidget(message.text, message.date);
+        },
+      ),
+    );
+  }
+*/
+
+  void updateChatHead(String s) async {
+    print("messageeee " + s + "");
+ print("agentName " + name + "");
+ print("username " + widget.name + "");
+ if(s!="" && s.toString() != "null") {
+   var documentReference = FirebaseFirestore.instance
+       .collection('chat_master')
+       .doc("chat_head")
+       .collection(widget.senderId)
+       .doc(widget.receiverId);
+   print("s " + s + "");
+
+   firestoreInstance.runTransaction((transaction) async {
+     transaction.set(
+       documentReference,
+       {
+         'idFrom': widget.senderId,
+         'idTo': widget.receiverId,
+         'msg': s.toString(),
+         'timestamp': DateTime
+             .now()
+             .millisecondsSinceEpoch
+             .toString(),
+         'type': "text",
+         'image': widget.image,
+         'agent': name,
+         'user': widget.name,
+         'clicked': "true",
+         'fcmToken': widget.fcmToken
+       },
+     );
+   }).then((value) {
+     var documentReference = FirebaseFirestore.instance
+         .collection('chat_master')
+         .doc("chat_head")
+         .collection(widget.receiverId)
+         .doc(widget.senderId);
+
+     firestoreInstance.runTransaction((transaction) async {
+       transaction.set(
+         documentReference,
+         {
+           'idFrom': widget.senderId,
+           'idTo': widget.receiverId,
+           'timestamp': DateTime
+               .now()
+               .millisecondsSinceEpoch
+               .toString(),
+           'msg': s.toString(),
+           'type': "text",
+           'image': image,
+           'agent': name,
+           'user': widget.name,
+           'clicked': "false",
+           'fcmToken': token
+         },
+       );
+     });
+   });
+ }
+/*
+
+    Map<String,String> inputMap = new HashMap();
+    inputMap = {
+      'idFrom': widget.senderId,
+      'idTo': widget.receiverId,
+      'msg': s.toString(),
+      'timestamp': DateTime.now()
+          .millisecondsSinceEpoch
+          .toString(),
+      'type': "text",
+      'image':widget.image,
+      'agent': widget.name,
+      'user':name,
+      'clicked': "true",
+      'fcmToken':widget.fcmToken
+    };
+    Map<String,String> inputMap2 = new HashMap();
+    inputMap2 = {
+      'idFrom': widget.senderId,
+      'idTo': widget.receiverId,
+      'msg': s.toString(),
+      'timestamp': DateTime.now()
+          .millisecondsSinceEpoch
+          .toString(),
+      'type': "text",
+      'image':image,
+      'agent': widget.name,
+      'user':name,
+      'clicked': "true",
+      'fcmToken':token
+    };
+
+    databaseRef.child("chat_master").child("chat_head").child(widget.senderId).child(widget.receiverId).update(inputMap).onError((error, stackTrace) {
+      print(error.toString());
+    }).then((value) {
+      print("Update heads realtime successfully");
+    });
+    databaseRef.child("chat_master").child("chat_head").child(widget.receiverId).child(widget.senderId).update(inputMap2);
+*/
+
   }
 
   void getData() async {
@@ -926,18 +1311,20 @@ class _ChatScreenState extends State<ChatScreen> {
         );
       });
 
-      updateChatHead2(content, type);
-
       _textEditingController.clear();
       focusNode.unfocus();
+      updateChatHead2(content, type);
+
     });
     listScrollController.animateTo(0.0,
         duration: Duration(milliseconds: 300), curve: Curves.easeOut);
-    msg =  type==1?"image":type==2?"video":"document";
+    message =  type==1?"image":type==2?"video":"document";
 
-    sendNotification(msg.toString());
+    sendNotification(message.toString());
 
   }
+
+
   void updateChatHead2(String s, int type) async {
 
     var documentReference = FirebaseFirestore.instance
@@ -995,6 +1382,7 @@ class _ChatScreenState extends State<ChatScreen> {
     });
     message = "";
   }
+
   Future<dynamic> getAccessToken(String id, String type) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     var userid = pref.getString("id");
@@ -1098,7 +1486,7 @@ class _ChatScreenState extends State<ChatScreen> {
       Navigator.push(context, new MaterialPageRoute(builder: (context)=> VideoCall(name:nm ,image:img, channel: channel, token: agoraToken, myId: userid.toString(),time: time, senderId: idd,)));
 
     }else{
-      Navigator.push(context, new MaterialPageRoute(builder: (context)=> DialScreen(name:nm ,image:img, channel: channel, agoraToken: agoraToken,myId: userid.toString(),time: time )));
+      Navigator.push(context, new MaterialPageRoute(builder: (context)=> DialScreen(name:nm ,image:img, channel: channel, agoraToken: agoraToken,myId: userid.toString(),time: time,receiverId: idd, )));
 
     }
   }
@@ -1107,8 +1495,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
 
 
-  Future sendNotification(String type) async {
-    Map<String, String> map  = new HashMap();
+  Future sendNotification(String type) async{
+  print("SenderTokenn "+widget.fcmToken);
+
+  Map<String, String> map  = new HashMap();
     map["Authorization"] = "key=AAAAtgmz2LM:APA91bHyV1VbnfG-dRXDo1cgzQDkYll-0ZRdKbeTL4Hv0hbFilEiTPLHHXkA_teNx-z9xNBqkM2a54TwJ75-mPQjCsBVlzKyuSYPc3oJHMCpFBqlSPWrClV96h5xuVQsGBEu8yVzlZdn";
     map["content-type"] = "application/json";
     var jsonRes;
@@ -1131,7 +1521,7 @@ class _ChatScreenState extends State<ChatScreen> {
         body: jsonEncode(
           <String, dynamic>{
             'notification': <String, dynamic>{
-              'body': msg.toString(),
+              'body': type.toString(),
               'title': name
             },
             'priority': 'high',
@@ -1145,7 +1535,9 @@ class _ChatScreenState extends State<ChatScreen> {
               "image":widget.image,
               "receiverId":widget.receiverId,
               "senderid":widget.senderId,
-              "fcm":widget.fcmToken
+              "fcm":widget.fcmToken,
+              'body': type.toString(),
+              'title': name
             },
             'to': widget.fcmToken
           },
@@ -1162,7 +1554,7 @@ class _ChatScreenState extends State<ChatScreen> {
       throw Exception('Failed to load album');
     }
 
-    msg= "";
+    message= "";
   }
 /*  Future<File> getFileFromUrl(String url, {name}) async {
     var fileName = 'testonline';
@@ -1193,6 +1585,24 @@ class _ChatScreenState extends State<ChatScreen> {
     // .... pageImage.bytes to image
   }*/
 
+
+
+
+
+
+}
+
+class MessageList{
+  var timeStamp = "";
+  Messages? message;
+}
+
+class Messages{
+  String content = "";
+  var idFrom = "";
+  var idTo = "";
+  var timestamp = "";
+  var type = "";
 }
 
 

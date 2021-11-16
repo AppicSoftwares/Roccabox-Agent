@@ -20,8 +20,8 @@ import 'package:audioplayers/audioplayers.dart';
 
 
 class DialScreen extends StatefulWidget {
-  var name, image, channel, agoraToken, myId, time;
-  DialScreen({Key? key, this.name, this.image, this.channel, this.agoraToken, this.myId, this.time}):super(key:key);
+  var name, image, channel, agoraToken, myId, time, receiverId;
+  DialScreen({Key? key, this.name, this.image, this.channel, this.agoraToken, this.myId, this.time, this.receiverId}):super(key:key);
   @override
   State<DialScreen> createState() => _DialScreenState();
 }
@@ -262,9 +262,12 @@ class _DialScreenState extends State<DialScreen> {
                       RoundedButton(
                         press: () {
                           pickCall = false;
+                          _stopFile();
                           _engine.leaveChannel();
+                          updateChatHead();
                           Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context)=> HomeNav()));
-                        },
+
+                          },
                         color: kRedColor,
                         iconColor: Colors.white,
                         iconSrc: "assets/call_end.svg",
@@ -373,9 +376,12 @@ class _DialScreenState extends State<DialScreen> {
 
   @override
   void dispose() {
-    _timmerInstance?.cancel();
-    _engine.destroy();
-    _stopFile();
+
+    if(mounted) {
+      _timmerInstance?.cancel();
+      _engine.destroy();
+      _stopFile();
+    }
     super.dispose() ;
   }
 
@@ -417,6 +423,27 @@ class _DialScreenState extends State<DialScreen> {
   void getid() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     idd = pref.get("id").toString();
+  }
+
+
+  void updateChatHead() async {
+    Map<String, String> map = new Map();
+    map["status"] = "end";
+    FirebaseFirestore.instance
+        .collection('call_master')
+        .doc("call_head")
+        .collection(widget.myId.toString())
+        .doc(widget.time).update(map).then((value) {
+      FirebaseFirestore.instance
+          .collection("call_master")
+          .doc("call_head")
+          .collection(widget.receiverId)
+          .doc(widget.time)
+          .update(map);
+    });
+
+
+
   }
 }
 

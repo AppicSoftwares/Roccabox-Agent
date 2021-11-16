@@ -39,6 +39,14 @@ class _VideoScreenState extends State<VideoScreen> {
     return MaterialApp(
       title: 'Video Demo',
       home: Scaffold(
+        appBar: AppBar(
+          leading: BackButton(
+            onPressed: (){
+              Navigator.of(context).pop();
+            },
+          ),
+          title: Text("Video Player"),
+        ),
         body: Center(
           child: _controller.value.isInitialized
               ? GestureDetector(

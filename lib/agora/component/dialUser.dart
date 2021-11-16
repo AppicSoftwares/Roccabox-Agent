@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import '../sizeConfig.dart';
 
 class DialUserPic extends StatelessWidget {
-  const DialUserPic({
+  DialUserPic({
     Key? key,
     this.size = 192,
-    required this.image,
+    this.image,
   }) : super(key: key);
 
   final double size;
-  final String image;
+  var image;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,12 @@ class DialUserPic extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: const BorderRadius.all(Radius.circular(100)),
-        child:   CachedNetworkImage(
+        child: image.toString()=="null"? Image.asset(
+          'assets/img_not_available.png',
+          width: 200.0,
+          height: 200.0,
+          fit: BoxFit.cover,
+        ): CachedNetworkImage(
           placeholder: (con, url ){
             return Image.asset(
               'assets/placeholder.png',
