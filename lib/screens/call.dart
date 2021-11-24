@@ -130,6 +130,8 @@ class _CallState extends State<Calls> {
                       model.id = json["id"].toString();
                       model.timestamp = json["timestamp"].toString();
                       model.fcmToken = json["fcmToken"].toString();
+                      model.timestamp = json["timestamp"].toString();
+                      model.chatType = json["chatType"].toString();
 
                       listUserrev.add(model);
                     });
@@ -152,7 +154,7 @@ class _CallState extends State<Calls> {
                           children: [
                             IconButton(
                                 onPressed: () {
-                                getAccessToken(listUser[index].id.toString(), "VOICE");
+                                getAccessToken(listUser[index].id.toString(), "VOICE",listUser[index].chatType=="agent-admin"?"admin":"user");
                                 },
                                 icon: Icon(
                                   Icons.phone,
@@ -160,7 +162,7 @@ class _CallState extends State<Calls> {
                                 )),
                             IconButton(
                                 onPressed: () {
-                                  getAccessToken(listUser[index].id.toString(), "VIDEO");
+                                  getAccessToken(listUser[index].id.toString(), "VIDEO",listUser[index].chatType=="agent-admin"?"admin":"user");
 
                                 },
                                 icon: Icon(
@@ -207,7 +209,7 @@ class _CallState extends State<Calls> {
 
 
 
-  Future<dynamic> getAccessToken(String id, String type) async {
+  Future<dynamic> getAccessToken(String id, String type, String ChatType) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     var userid = pref.getString("id");
 
@@ -222,8 +224,10 @@ class _CallState extends State<Calls> {
           "type": type,
           "user_id": userid.toString(),
           "receiver_id": id,
-          "time": DateTime.now().millisecondsSinceEpoch.toString()
-
+          "time": DateTime.now().millisecondsSinceEpoch.toString(),
+          "channelKey": ChatType=="agent-admin"?"key_admin":"key_user",
+          "id": "10",
+          "click_action": 'FLUTTER_NOTIFICATION_CLICK',
 
         });
 

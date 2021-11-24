@@ -222,11 +222,29 @@ class _ChatState extends State<Chat> {
             listUser.clear();
             snapshot.data?.docs.forEach((element) {
               var json;
-              UserList model = new UserList();
-              model.id = element.id.toString();
-
               print("StreamId "+element.id);
               json = element.data();
+
+              if(json["chatType"]=="agent-admin"){
+                UserList model = new UserList();
+                model.id = element.id.toString();
+
+
+                print("StreamName " + json["user"].toString());
+                print("StreamImage " + element.get("image").toString());
+                model.name = json["admin"].toString();
+                model.image = json["image"].toString();
+                model.message = json["msg"].toString();
+                model.clicked = json["clicked"].toString();
+                model.fcmToken = json["fcmToken"].toString();
+                model.chatType = json["chatType"].toString();
+
+                listUser.add(model);
+              }else{
+                UserList model = new UserList();
+                model.id = element.id.toString();
+
+
                 print("StreamName " + json["user"].toString());
                 print("StreamImage " + element.get("image").toString());
                 model.name = json["user"].toString();
@@ -234,8 +252,11 @@ class _ChatState extends State<Chat> {
                 model.message = json["msg"].toString();
                 model.clicked = json["clicked"].toString();
                 model.fcmToken = json["fcmToken"].toString();
+                model.chatType = json["chatType"].toString();
 
-              listUser.add(model);
+                listUser.add(model);
+              }
+
             });
           }
           return ListView.separated(
@@ -254,7 +275,7 @@ class _ChatState extends State<Chat> {
                         ChatScreen(name: listUser[index].name,
                           image: listUser[index].image,
                           receiverId: listUser[index].id,
-                          senderId: id,fcmToken: listUser[index].fcmToken,))),
+                          senderId: id,fcmToken: listUser[index].fcmToken,userType: listUser[index].chatType=="agent-admin"?"admin":"user",))),
                 leading:listUser[index].image.toString()=="null"  || listUser[index].image==""? CircleAvatar(
                   backgroundImage: AssetImage('assets/img1.png'),
                 ):CircleAvatar(backgroundImage: NetworkImage(listUser[index].image.toString() )),
@@ -337,6 +358,7 @@ class UserList{
   String? clicked;
   String? fcmToken;
   String? timestamp;
+  String? chatType;
 }
 
 

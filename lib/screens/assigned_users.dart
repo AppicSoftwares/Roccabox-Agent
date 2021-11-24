@@ -120,7 +120,7 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
                       onTap: () async {
                         SharedPreferences pref = await SharedPreferences.getInstance();
                         var id = pref.getString("id");
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(senderId:id, receiverId: widget.totalUserList[index].userId, name:  widget.totalUserList[index].name, image: widget.totalUserList[index].image,fcmToken: widget.totalUserList[index].firebase_token,)));
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(senderId:id, receiverId: widget.totalUserList[index].userId, name:  widget.totalUserList[index].name, image: widget.totalUserList[index].image,fcmToken: widget.totalUserList[index].firebase_token,userType: "user",)));
                       },
                       child: Icon(Icons.chat, color: Colors.black,size: 24)),
                 ],
@@ -207,8 +207,10 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
           "type": type,
           "user_id": userid.toString(),
           "receiver_id": id,
-          "time":DateTime.now().millisecondsSinceEpoch.toString()
-
+          "time":DateTime.now().millisecondsSinceEpoch.toString(),
+          "channelKey": "key_user",
+          "id": "10",
+          "click_action": 'FLUTTER_NOTIFICATION_CLICK',
 
         });
 

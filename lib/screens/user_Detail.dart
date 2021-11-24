@@ -29,7 +29,6 @@ class _NotificationDetailsState extends State<UserDetails> {
 
  @override
   void initState() {
-    print("jhuh"+widget.P_Agency_FilterId+"^^");
     super.initState();
   isloading = true;
     getData();

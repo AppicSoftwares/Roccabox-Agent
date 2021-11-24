@@ -27,8 +27,8 @@ import '../main.dart';
 import 'documentScreen.dart';
 
 class ChatScreen extends StatefulWidget {
-  var senderId, receiverId, name, fcmToken, image;
-  ChatScreen({Key? key, this.image, this.name, this.receiverId, this.senderId, this.fcmToken})
+  var senderId, receiverId, name, fcmToken, image, userType;
+  ChatScreen({Key? key, this.image, this.name, this.receiverId, this.senderId, this.fcmToken, this.userType})
       : super(key: key);
   @override
   _ChatScreenState createState() => _ChatScreenState();
@@ -89,6 +89,8 @@ class _ChatScreenState extends State<ChatScreen> {
   void dispose() {
     currentInstance = "";
     chatUser = "";
+    focusNode.unfocus();
+    focusNode.dispose();
     super.dispose();
   }
   _scrollListener() {
@@ -167,7 +169,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     fontWeight: FontWeight.w600),
               ),
               subtitle: Text(
-                'Rajveer Place',
+                '',
 
                 style: TextStyle(
                   fontSize: 12,
@@ -1068,39 +1070,15 @@ void updateSeccond(String msg) {
     print("messageeee " + s + "");
  print("agentName " + name + "");
  print("username " + widget.name + "");
+ print("type " + widget.userType + "");
  if(s!="" && s.toString() != "null") {
-   var documentReference = FirebaseFirestore.instance
-       .collection('chat_master')
-       .doc("chat_head")
-       .collection(widget.senderId)
-       .doc(widget.receiverId);
-   print("s " + s + "");
-
-   firestoreInstance.runTransaction((transaction) async {
-     transaction.set(
-       documentReference,
-       {
-         'idFrom': widget.senderId,
-         'idTo': widget.receiverId,
-         'msg': s.toString(),
-         'timestamp': DateTime
-             .now()
-             .millisecondsSinceEpoch
-             .toString(),
-         'type': "text",
-         'image': widget.image,
-         'agent': name,
-         'user': widget.name,
-         'clicked': "true",
-         'fcmToken': widget.fcmToken
-       },
-     );
-   }).then((value) {
+   if(widget.userType=="admin"){
      var documentReference = FirebaseFirestore.instance
          .collection('chat_master')
          .doc("chat_head")
-         .collection(widget.receiverId)
-         .doc(widget.senderId);
+         .collection(widget.senderId)
+         .doc(widget.receiverId);
+     print("s " + s + "");
 
      firestoreInstance.runTransaction((transaction) async {
        transaction.set(
@@ -1108,21 +1086,108 @@ void updateSeccond(String msg) {
          {
            'idFrom': widget.senderId,
            'idTo': widget.receiverId,
+           'msg': s.toString(),
            'timestamp': DateTime
                .now()
                .millisecondsSinceEpoch
                .toString(),
-           'msg': s.toString(),
            'type': "text",
-           'image': image,
+           'image': widget.image,
            'agent': name,
-           'user': widget.name,
-           'clicked': "false",
-           'fcmToken': token
+           'admin': widget.name,
+           'clicked': "true",
+           'fcmToken': widget.fcmToken,
+           'chatType':"agent-admin"
          },
        );
+     }).then((value) {
+       var documentReference = FirebaseFirestore.instance
+           .collection('chat_master')
+           .doc("chat_head")
+           .collection(widget.receiverId)
+           .doc(widget.senderId);
+
+       firestoreInstance.runTransaction((transaction) async {
+         transaction.set(
+           documentReference,
+           {
+             'idFrom': widget.senderId,
+             'idTo': widget.receiverId,
+             'timestamp': DateTime
+                 .now()
+                 .millisecondsSinceEpoch
+                 .toString(),
+             'msg': s.toString(),
+             'type': "text",
+             'image': image,
+             'agent': name,
+             'admin': widget.name,
+             'clicked': "false",
+             'fcmToken': token,
+             'chatType':"agent-admin"
+           },
+         );
+       });
      });
-   });
+   }else{
+     var documentReference = FirebaseFirestore.instance
+         .collection('chat_master')
+         .doc("chat_head")
+         .collection(widget.senderId)
+         .doc(widget.receiverId);
+     print("s " + s + "");
+
+     firestoreInstance.runTransaction((transaction) async {
+       transaction.set(
+         documentReference,
+         {
+           'idFrom': widget.senderId,
+           'idTo': widget.receiverId,
+           'msg': s.toString(),
+           'timestamp': DateTime
+               .now()
+               .millisecondsSinceEpoch
+               .toString(),
+           'type': "text",
+           'image': widget.image,
+           'agent': name,
+           'user': widget.name,
+           'clicked': "true",
+           'fcmToken': widget.fcmToken,
+           'chatType':"agent-user"
+         },
+       );
+     }).then((value) {
+       var documentReference = FirebaseFirestore.instance
+           .collection('chat_master')
+           .doc("chat_head")
+           .collection(widget.receiverId)
+           .doc(widget.senderId);
+
+       firestoreInstance.runTransaction((transaction) async {
+         transaction.set(
+           documentReference,
+           {
+             'idFrom': widget.senderId,
+             'idTo': widget.receiverId,
+             'timestamp': DateTime
+                 .now()
+                 .millisecondsSinceEpoch
+                 .toString(),
+             'msg': s.toString(),
+             'type': "text",
+             'image': image,
+             'agent': name,
+             'user': widget.name,
+             'clicked': "false",
+             'fcmToken': token,
+             'chatType':"agent-user"
+           },
+         );
+       });
+     });
+   }
+
  }
 /*
 
@@ -1326,38 +1391,13 @@ void updateSeccond(String msg) {
 
 
   void updateChatHead2(String s, int type) async {
-
-    var documentReference = FirebaseFirestore.instance
-        .collection('chat_master')
-        .doc("chat_head")
-        .collection(widget.senderId)
-        .doc(widget.receiverId);
-    print("s "+s+"");
-
-    firestoreInstance.runTransaction((transaction) async {
-      transaction.set(
-        documentReference,
-        {
-          'idFrom': widget.senderId,
-          'idTo': widget.receiverId,
-          'msg': type==1?"image":type==2?"video":"Document",
-          'timestamp': DateTime.now()
-              .millisecondsSinceEpoch
-              .toString(),
-          'type': type==1?"image":type==2?"video":"document",
-          'image':widget.image,
-          'agent': name,
-          'user':widget.name,
-          'clicked': "true",
-           'fcmToken': widget.fcmToken
-        },
-      );
-  }).then((value) {
+    if(widget.userType=="admin") {
       var documentReference = FirebaseFirestore.instance
           .collection('chat_master')
           .doc("chat_head")
-          .collection(widget.receiverId)
-          .doc(widget.senderId);
+          .collection(widget.senderId)
+          .doc(widget.receiverId);
+      print("s " + s + "");
 
       firestoreInstance.runTransaction((transaction) async {
         transaction.set(
@@ -1365,21 +1405,107 @@ void updateSeccond(String msg) {
           {
             'idFrom': widget.senderId,
             'idTo': widget.receiverId,
+            'msg': type == 1 ? "image" : type == 2 ? "video" : "Document",
             'timestamp': DateTime
                 .now()
                 .millisecondsSinceEpoch
                 .toString(),
-            'msg': type==1?"image":type==2?"video":"Document",
-            'type': type==1?"image":type==2?"video":"document",
-            'image': image,
+            'type': type == 1 ? "image" : type == 2 ? "video" : "document",
+            'image': widget.image,
             'agent': name,
-            'user': widget.name,
-            'clicked': "false",
-             'fcmToken': token
+            'admin': widget.name,
+            'clicked': "true",
+            'fcmToken': widget.fcmToken,
+            'chatType':"agent-admin"
           },
         );
+      }).then((value) {
+        var documentReference = FirebaseFirestore.instance
+            .collection('chat_master')
+            .doc("chat_head")
+            .collection(widget.receiverId)
+            .doc(widget.senderId);
+
+        firestoreInstance.runTransaction((transaction) async {
+          transaction.set(
+            documentReference,
+            {
+              'idFrom': widget.senderId,
+              'idTo': widget.receiverId,
+              'timestamp': DateTime
+                  .now()
+                  .millisecondsSinceEpoch
+                  .toString(),
+              'msg': type == 1 ? "image" : type == 2 ? "video" : "Document",
+              'type': type == 1 ? "image" : type == 2 ? "video" : "document",
+              'image': image,
+              'agent': name,
+              'admin': widget.name,
+              'clicked': "false",
+              'fcmToken': token,
+              'chatType':"agent-admin"
+            },
+          );
+        });
       });
-    });
+    }else{
+      var documentReference = FirebaseFirestore.instance
+          .collection('chat_master')
+          .doc("chat_head")
+          .collection(widget.senderId)
+          .doc(widget.receiverId);
+      print("s " + s + "");
+
+      firestoreInstance.runTransaction((transaction) async {
+        transaction.set(
+          documentReference,
+          {
+            'idFrom': widget.senderId,
+            'idTo': widget.receiverId,
+            'msg': type == 1 ? "image" : type == 2 ? "video" : "Document",
+            'timestamp': DateTime
+                .now()
+                .millisecondsSinceEpoch
+                .toString(),
+            'type': type == 1 ? "image" : type == 2 ? "video" : "document",
+            'image': widget.image,
+            'agent': name,
+            'user': widget.name,
+            'clicked': "true",
+            'fcmToken': widget.fcmToken,
+            'chatType':"agent-user"
+          },
+        );
+      }).then((value) {
+        var documentReference = FirebaseFirestore.instance
+            .collection('chat_master')
+            .doc("chat_head")
+            .collection(widget.receiverId)
+            .doc(widget.senderId);
+
+        firestoreInstance.runTransaction((transaction) async {
+          transaction.set(
+            documentReference,
+            {
+              'idFrom': widget.senderId,
+              'idTo': widget.receiverId,
+              'timestamp': DateTime
+                  .now()
+                  .millisecondsSinceEpoch
+                  .toString(),
+              'msg': type == 1 ? "image" : type == 2 ? "video" : "Document",
+              'type': type == 1 ? "image" : type == 2 ? "video" : "document",
+              'image': image,
+              'agent': name,
+              'user': widget.name,
+              'clicked': "false",
+              'fcmToken': token,
+              'chatType':"agent-user"
+            },
+          );
+        });
+      });
+    }
     message = "";
   }
 
@@ -1398,6 +1524,9 @@ void updateSeccond(String msg) {
           "type": type,
           "user_id": userid.toString(),
           "receiver_id": id,
+          "channelKey": widget.userType=="user"?"key_user":"key_admin",
+          "id": "10",
+          "click_action": 'FLUTTER_NOTIFICATION_CLICK',
           "time": DateTime.now().millisecondsSinceEpoch.toString()
 
 
@@ -1522,7 +1651,9 @@ void updateSeccond(String msg) {
           <String, dynamic>{
             'notification': <String, dynamic>{
               'body': type.toString(),
-              'title': name
+              'title': name,
+              "channelKey": widget.userType=="admin"?"key_admin":"key_agent",
+              "id": "10",
             },
             'priority': 'high',
             'data': <String, dynamic>{
@@ -1537,7 +1668,10 @@ void updateSeccond(String msg) {
               "senderid":widget.senderId,
               "fcm":widget.fcmToken,
               'body': type.toString(),
-              'title': name
+              'title': name,
+              "channelKey": widget.userType=="admin"?"key_admin":"key_agent",
+              "id": "10",
+              "chat_type":widget.userType=="admin"?"agent-admin":"agent-user"
             },
             'to': widget.fcmToken
           },

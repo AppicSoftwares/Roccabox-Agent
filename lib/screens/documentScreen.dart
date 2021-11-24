@@ -54,6 +54,14 @@ class _DocumentScreenState extends State<DocumentScreen> {
     print(urlPDFPath);
     if (loaded) {
       return Scaffold(
+        appBar: AppBar(
+          leading: BackButton(
+            onPressed: (){
+              Navigator.of(context).pop();
+            },
+          ),
+          title: Text("Document Viewer"),
+        ),
         body: PDFView(
           filePath: urlPDFPath,
           autoSpacing: true,
@@ -123,7 +131,12 @@ class _DocumentScreenState extends State<DocumentScreen> {
         //Replace with your loading UI
         return Scaffold(
           appBar: AppBar(
-            title: Text("Document"),
+            leading: BackButton(
+              onPressed: (){
+                Navigator.of(context).pop();
+              },
+            ),
+            title: Text("Document Viewer"),
           ),
           body: Container(
             width: double.infinity,
@@ -141,7 +154,12 @@ class _DocumentScreenState extends State<DocumentScreen> {
         //Replace Error UI
         return Scaffold(
           appBar: AppBar(
-            title: Text("Demo"),
+            leading: BackButton(
+              onPressed: (){
+                Navigator.of(context).pop();
+              },
+            ),
+            title: Text("Document Viewer"),
           ),
           body: Text(
             "PDF Not Available",
