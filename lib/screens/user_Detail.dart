@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -250,6 +251,11 @@ class _NotificationDetailsState extends State<UserDetails> {
   Future<dynamic> getData() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     var id = pref.getString("id").toString();
+    var authToken = pref.getString("auth_token").toString();
+    print("AUTH_TOKEN "+authToken.toString());
+    Map<String, String> mapheaders = new HashMap();
+    mapheaders["Authorization"] = authToken.toString();
+
     print("Idd " + id.toString() + "");
     String uri = "https://webapi.resales-online.com/V6/PropertyDetails?" +
         "P_Agency_FilterId=" +
@@ -263,7 +269,7 @@ class _NotificationDetailsState extends State<UserDetails> {
         widget.totalUserList.property_Rid;
 
     var request =
-    http.post(Uri.parse(RestDatasource.NEWURL1), body: {"url": uri});
+    http.post(Uri.parse(RestDatasource.NEWURL1),headers: mapheaders, body: {"url": uri});
 
     var jsonRes;
     var res;

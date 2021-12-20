@@ -65,6 +65,7 @@ class LanguageChange {
   var ABOUT = ['About Us', 'Sobre nosotras'];
   var TERMS = ['Terms and Conditions', 'Términos y condiciones'];
   var CONTACT = ['Contact Us', 'Contáctenos'];
+  var TALKTOADMIN = ['Talk to admin', 'Hablar con el administrador'];
   var TOTALNOOFCLIENTS = ['Total No. of Clients', 'Número total de clientes'];
   var TOTALUSER = ['Total User', 'Usuario total'];
   var CHANGEPASWWORD = ['Change Password', 'Cambiar la contraseña'];

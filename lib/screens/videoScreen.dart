@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:video_player/video_player.dart';
@@ -15,7 +18,7 @@ class VideoScreen extends StatefulWidget {
 class _VideoScreenState extends State<VideoScreen> {
   late VideoPlayerController _controller;
 
-
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -23,6 +26,7 @@ class _VideoScreenState extends State<VideoScreen> {
     _controller = VideoPlayerController.network(
        widget.video)
       ..initialize().then((_) {
+        isLoading = false;
         // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
         setState(() {
           _controller.value.isPlaying
@@ -47,7 +51,7 @@ class _VideoScreenState extends State<VideoScreen> {
           ),
           title: Text("Video Player"),
         ),
-        body: Center(
+        body: isLoading==true?Center(child:Text("Loading....", style: TextStyle(fontSize: 20),)): Center(
           child: _controller.value.isInitialized
               ? GestureDetector(
             onTap: (){
@@ -59,7 +63,7 @@ class _VideoScreenState extends State<VideoScreen> {
             },
                 child: AspectRatio(
             aspectRatio: _controller.value.aspectRatio,
-            child: VideoPlayer(_controller),
+            child:VideoPlayer(_controller),
           ),
               )
               :Container(

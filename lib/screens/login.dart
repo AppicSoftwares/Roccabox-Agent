@@ -102,7 +102,7 @@ class _LoginState extends State<Login> {
                           keyboardType: TextInputType.emailAddress,
                           validator: (val) {
                             if (val == null || val.isEmpty) {
-                              return 'Please Enter your Email';
+                              return 'Please Enter Your Email';
                             }
                             if (!EmailValidator.validate(email.toString())) {
                               return 'Please Enter Valid Email Id';
@@ -173,6 +173,8 @@ class _LoginState extends State<Login> {
                     )
                   : GestureDetector(
                       onTap: () {
+                        FocusScope.of(context).unfocus();
+
                         if (formkey.currentState!.validate()) {
                           if (EmailValidator.validate(email.toString())) {
                             setState(() {
@@ -286,17 +288,20 @@ class _LoginState extends State<Login> {
       if (res.statusCode == 200) {
         print("Response: " + res.toString() + "_");
         print("ResponseJSON: " + jsonRes.toString() + "_");
+        print("AuthToken "+jsonRes["auth_token"].toString());
+
         msg = jsonRes["message"].toString();
         if (jsonRes["status"] == true) {
           if(jsonRes["data"]["status"].toString()=="1") {
             var mCustomToken = jsonRes["token"];
             SharedPreferences prefs = await SharedPreferences.getInstance();
             prefs.setString('id', jsonRes["data"]["id"].toString());
+            prefs.setString('auth_token', jsonRes["auth_token"].toString());
             prefs.setString('email', jsonRes["data"]["email"].toString());
             prefs.setString('name', jsonRes["data"]["name"].toString());
             prefs.setString('phone', jsonRes["data"]["phone"].toString());
             prefs.setString('image', jsonRes["data"]["image"].toString());
-
+            prefs.setString('country_code', jsonRes["data"]["country_code"].toString());
             prefs.commit();
 
             mAuth.signInWithCustomToken(mCustomToken).then((value) {
@@ -331,14 +336,7 @@ class _LoginState extends State<Login> {
             .showSnackBar(SnackBar(content: Text('Error while fetching data')));
         setState(() {
           isLoading = false;
-          /* Fluttertoast.showToast(
-              msg: "Exception: " + jsonRes["message"].toString(),
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.CENTER,
-              timeInSecForIosWeb: 2,
-              backgroundColor: Colors.red,
-              textColor: Colors.white,
-              fontSize: 16.0);*/
+
         });
       }
     } else {

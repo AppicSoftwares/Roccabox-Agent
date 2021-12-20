@@ -1,6 +1,11 @@
+import 'dart:collection';
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:roccabox_agent/agora/dialscreen/dialScreen.dart';
+import 'package:roccabox_agent/agora/videoCall/videoCall.dart';
 import 'package:roccabox_agent/main.dart';
 import 'package:roccabox_agent/screens/change_Password.dart';
 import 'package:roccabox_agent/screens/edit_profile.dart';
@@ -9,9 +14,12 @@ import 'package:roccabox_agent/screens/privacy.dart';
 import 'package:roccabox_agent/screens/terms.dart';
 import 'package:roccabox_agent/screens/assigned_users.dart';
 import 'package:roccabox_agent/services/APIClient.dart';
+import 'package:roccabox_agent/util/customDialoge.dart';
 import 'package:roccabox_agent/util/languagecheck.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'aboutUs.dart';
+import 'chat.dart';
+import 'chatscreen.dart';
 import 'contactus.dart';
 import 'language.dart';
 import 'package:http/http.dart' as http;
@@ -29,18 +37,25 @@ class _ProfileState extends State<Profile> {
   var email;
   var name;
   var image;
-  
-
-  
-  
+  var myFcm, myImage, myName;
+  final firestoreInstance = FirebaseFirestore.instance;
+  FirebaseMessaging? auth;
+  var id;
   bool isLoading = false;
-
+  UserList user = UserList();
   @override
   void initState() {
+    getChatData();
      getData();
     super.initState();
-   
-    getUserList();
+
+     auth = FirebaseMessaging.instance;
+     auth?.getToken().then((value) {
+       print("FirebaseToken " + value.toString());
+       myFcm = value.toString();
+     }
+     );
+     getUserList();
     isLoading = true;
   }
 
@@ -70,7 +85,7 @@ class _ProfileState extends State<Profile> {
             ListTile(
               contentPadding:
                   EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              leading: image == null
+              leading: image == null || image.toString()=="null"
                                     ? Image.asset(
                                         'assets/avatar.png',
                                       )
@@ -94,7 +109,7 @@ class _ProfileState extends State<Profile> {
               trailing: TextButton(
                   onPressed: () {
                     Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => EditProfile()));
+                        MaterialPageRoute(builder: (context) => EditProfile())).then((value) => {getData()});
                   },
                   child: Text(
 
@@ -179,6 +194,37 @@ class _ProfileState extends State<Profile> {
               color: Color(0xff707070),
             ),
             ListTile(
+                onTap: () {
+                  if(user.id!=null && user.id.toString()!="null" && user.id.toString()!="") {
+                    Navigator.push(
+                        context, MaterialPageRoute(builder: (context) =>
+                        ChatScreen(name: user.name,
+                            image: user.image,
+                            receiverId: user.id,
+                            senderId: id,
+                            fcmToken: user.fcmToken,
+                            userType: "admin")));
+                  }
+                  },
+                //tileColor: Color(0xffF3F3F3),
+                //tileColor: Color(0xffF3F3F3),
+                title: Text(
+
+                  //contact us
+                  languageChange.TALKTOADMIN[langCount],
+                  style: TextStyle(
+                      fontSize: 16,
+                      color: Color(0xff000000),
+                      fontWeight: FontWeight.w500),
+                ),
+                trailing: Icon(
+                  Icons.arrow_forward_ios,
+                  size: 20,
+                )),
+           /* Divider(
+              color: Color(0xff707070),
+            ),
+            ListTile(
                 onTap: () => Navigator.push(context,
                     MaterialPageRoute(builder: (context) => Contact())),
                 //tileColor: Color(0xffF3F3F3),
@@ -195,7 +241,7 @@ class _ProfileState extends State<Profile> {
                 trailing: Icon(
                   Icons.arrow_forward_ios,
                   size: 20,
-                )),
+                )),*/
                  Divider(
               color: Color(0xff707070),
             ),
@@ -304,14 +350,7 @@ class _ProfileState extends State<Profile> {
                     fontWeight: FontWeight.w500),
               ),
               onTap: () async {
-                var pref = await SharedPreferences.getInstance();
-
-                pref.clear();
-                pref.commit();
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    new MaterialPageRoute(builder: (context) => Login()),
-                    (route) => false);
+                showAlertDialog(context);
               },
             ),
           ],
@@ -319,14 +358,103 @@ class _ProfileState extends State<Profile> {
       ),
     );
   }
+  Future getChatData() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    id = pref.getString("id").toString();
+
+    var jsonRes;
+    var response =
+    await http.post(Uri.parse(RestDatasource.BASE_URL + 'userProfile'),
+        body: {
+          "user_id":"38"
+        });
+
+    if (response.statusCode == 200) {
+      var apiObj = JsonDecoder().convert(response.body.toString());
+      if(apiObj["status"]==true){
+        var data = apiObj["data"];
+        user = new UserList();
+        user.chatType = "user-admin";
+        user.name = data["name"];
+        user.id = "38";
+        user.fcmToken = data["firebase_token"];
+        user.image = data["image"];
+      }
+
+    } else {
+      throw Exception('Failed to load album');
+    }
+  }
+  void updateChatHead(String userid, String name, String image, String type, String fcmToken,String idd, String status, String agoraToken, String channel, String time) async {
+
+    var documentReference = FirebaseFirestore.instance
+        .collection('call_master')
+        .doc("call_head")
+        .collection(userid)
+        .doc(time);
+
+
+    firestoreInstance.runTransaction((transaction) async {
+      transaction.set(
+        documentReference,
+        {
+          'fcmToken': fcmToken,
+          'id': idd,
+          'image': image,
+          'name': name,
+          'timestamp': time,
+          'type': type,
+          'callType':"incoming",
+          'status': status
+
+        },
+      );
+    }).then((value) {
+      var documentReference = FirebaseFirestore.instance
+          .collection('call_master')
+          .doc("call_head")
+          .collection(idd)
+          .doc(time);
+
+      firestoreInstance.runTransaction((transaction) async {
+        transaction.set(
+          documentReference,
+          {
+            'fcmToken': myFcm,
+            'id': userid,
+            'image': myImage,
+            'name': myName,
+            'timestamp': time,
+            'type': type,
+            'callType':"outgoing",
+            'status':status
+          },
+        );
+      });
+    });
+    if(type=="VIDEO"){
+      Navigator.push(context, new MaterialPageRoute(builder: (context)=> VideoCall(name:name ,image:image, channel: channel, token: agoraToken, myId: userid.toString(),time: time, senderId: idd,)));
+
+    }else{
+      Navigator.push(context, new MaterialPageRoute(builder: (context)=> DialScreen(name:name ,image:image, channel: channel, agoraToken: agoraToken,myId: userid.toString(),time: time,receiverId: idd,)));
+
+    }
+  }
 
   Future<dynamic> getUserList() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     var id = pref.getString("id").toString();
+    var authToken = pref.getString("auth_token").toString();
+    print("AUTH_TOKEN "+authToken.toString());
+    Map<String, String> mapheaders = new HashMap();
+    mapheaders["Authorization"] = authToken.toString();
+
+    myName = pref.getString("name").toString();
+    myImage = pref.getString("image").toString();
     print("id "+id.toString()+"");
     var request = http.get(Uri.parse(
       RestDatasource.GETASSIGNEDUSER_URL + id,
-    ));
+    ), headers: mapheaders);
 
     var jsonRes;
     var jsonArray;
@@ -374,43 +502,24 @@ class _ProfileState extends State<Profile> {
         setState(() {
           isLoading = false;
         });
-        // Fluttertoast.showToast(
-        //     msg: jsonRes["message"].toString(),
-        //     toastLength: Toast.LENGTH_SHORT,
-        //     gravity: ToastGravity.CENTER,
-        //     timeInSecForIosWeb: 2,
-        //     backgroundColor: Colors.green,
-        //     textColor: Colors.white,
-        //     fontSize: 16.0);
-        // print("Data " + jsonRes['data']['token'] + "*");
-      } else {
+   } else {
         setState(() {
-          isLoading = false;
+          isLoading  = false;
           ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(jsonRes["message"].toString())));
-          // Fluttertoast.showToast(
-          //     msg: "Exception: " + jsonRes["message"].toString(),
-          //     toastLength: Toast.LENGTH_SHORT,
-          //     gravity: ToastGravity.CENTER,
-          //     timeInSecForIosWeb: 2,
-          //     backgroundColor: Colors.red,
-          //     textColor: Colors.white,
-          //     fontSize: 16.0);
+          if(jsonRes["code"]!=null){
+            if(jsonRes["code"]==403){
+              showLogoutDialog(context);
+            }
+          }
         });
       }
     } else {
       setState(() {
         isLoading = false;
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Please try leter")));
-        // Fluttertoast.showToast(
-        //     msg: "Exception: " + jsonRes["message"].toString(),
-        //     toastLength: Toast.LENGTH_SHORT,
-        //     gravity: ToastGravity.CENTER,
-        //     timeInSecForIosWeb: 2,
-        //     backgroundColor: Colors.red,
-        //     textColor: Colors.white,
-        //     fontSize: 16.0);
+            .showSnackBar(SnackBar(content: Text("Please try later")));
+
       });
     }
      getData();
@@ -428,6 +537,48 @@ class _ProfileState extends State<Profile> {
       
     });
   }
+
+  showAlertDialog(BuildContext context) {
+
+    // set up the buttons
+    Widget cancelButton = FlatButton(
+      child: Text("No", style: TextStyle(color: Colors.blueAccent),),
+      onPressed:  () {
+        Navigator.of(context, rootNavigator: true).pop(context);
+      },
+    );
+    Widget continueButton = FlatButton(
+      child: Text("Yes", style: TextStyle(color: Colors.blueAccent),),
+      onPressed:  () async {
+        var pref = await SharedPreferences.getInstance();
+        pref.clear();
+        pref.commit();
+        var result  = new MaterialPageRoute(builder: (context) => Login());
+        Navigator.of(context,rootNavigator: true).pushAndRemoveUntil(result, (route) => false);
+
+
+      },
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Logout", style: TextStyle(fontWeight: FontWeight.bold),),
+      content: Text("Are you sure you want to logout?"),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
 }
 
 class TotalUserList {

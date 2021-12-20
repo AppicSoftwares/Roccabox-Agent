@@ -85,53 +85,18 @@ class _DialScreenState extends State<DialScreen> {
     initPlatformState();
   }
 
-
-  Future<void> initAgora() async {
-    // retrieve permissions
-    await [Permission.microphone, Permission.camera].request();
-
-    //create the engine
-    _engine = await RtcEngine.create(appId);
-    _engine.setEventHandler(
-      RtcEngineEventHandler(
-        joinChannelSuccess: (String channel, int uid, int elapsed) {
-          print("local user $uid joined");
-          setState(() {
-            _localUserJoined = true;
-          });
-        },
-        userJoined: (int uid, int elapsed) {
-          print("remote user $uid joined");
-          setState(() {
-            _remoteUid = uid;
-          });
-          Navigator.push(context, new MaterialPageRoute(builder: (context)=> VideoCall( channel: widget.channel, token: widget.agoraToken)));
-
-        },
-        userOffline: (int uid, UserOfflineReason reason) {
-          print("remote user $uid left channel");
-          setState(() {
-            _remoteUid = null;
-          });
-        },
-
-      ),
-    );
-
-  }
-
-
   Future<void> initPlatformState() async {
     // Get microphone permission
     await [Permission.microphone].request();
-    Future.delayed(Duration(seconds: 15), () async{
+    Future.delayed(Duration(seconds: 30), () async{
       if(remote==false){
         _engine.leaveChannel();
         _engine.destroy();
         _stopFile();
+        if(mounted) {
           Navigator.of(context).pushReplacement(
               new MaterialPageRoute(builder: (context) => HomeNav()));
-
+        }
       }
 
     });
@@ -205,13 +170,20 @@ class _DialScreenState extends State<DialScreen> {
             builder: (BuildContext context,
                 AsyncSnapshot<DocumentSnapshot> snapshot) {
               if(snapshot.hasData){
-                status = snapshot.data!.get("status").toString();
-                  if(status.toString()!="null"){
-                    if(status.toString()=="end"){
+                if(snapshot.data!.exists) {
+                  status = snapshot.data!.get("status").toString();
+
+                  if (status.toString() != "null") {
+                    if (status.toString() == "end") {
                       _engine.leaveChannel();
-                      Navigator.of(context).pop();
+                      WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+                        Navigator.of(context).pushReplacement(
+                            new MaterialPageRoute(
+                                builder: (context) => HomeNav()));
+                      });
                     }
                   }
+                }
               }
               return Column(
                 children: [

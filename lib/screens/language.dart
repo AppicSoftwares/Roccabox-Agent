@@ -11,6 +11,17 @@ class Language extends StatefulWidget {
 class _LanguageState extends State<Language> {
   var lang = 'English';
 
+
+  @override
+  void initState() {
+    super.initState();
+    if(langCount==1){
+      lang = 'Spanish';
+    }else{
+      lang = 'English';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,9 +80,18 @@ class _LanguageState extends State<Language> {
                     activeColor: Colors.white,
                     value: 'English',
                     groupValue: lang,
-                    onChanged: (val) {
+                    onChanged: (val) async{
+                      var pref = await SharedPreferences.getInstance();
+
                       setState(() {
-                        lang = val.toString();
+                        pref.setInt("lang",0);
+                        pref.commit();
+                        setState(() {
+                          lang = val.toString();
+                          langCount = 0;
+                          Navigator.pushReplacement(context,
+                              MaterialPageRoute(builder: (context) => HomeNav()));
+                        });
                       });
                     }),
               ),
@@ -106,9 +126,18 @@ class _LanguageState extends State<Language> {
                     activeColor: Colors.white,
                     value: 'Spanish',
                     groupValue: lang,
-                    onChanged: (val) {
+                    onChanged: (val) async{
+                      var pref = await SharedPreferences.getInstance();
+
                       setState(() {
-                        lang = val.toString();
+                        pref.setInt("lang",1);
+                        pref.commit();
+                        setState(() {
+                          lang = val.toString();
+                          langCount = 1;
+                          Navigator.pushReplacement(context,
+                              MaterialPageRoute(builder: (context) => HomeNav()));
+                        });
                       });
                     }),
               ),

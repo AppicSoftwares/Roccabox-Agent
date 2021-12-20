@@ -61,7 +61,7 @@ class _BodyState extends State<Body> {
   bool _switch = false;
   int? _remoteUid;
 
-  Future<void> initPlatformStateVoice(var token, var channelName, var images, var name) async {
+  Future<void> initPlatformStateVoice(var token, var channelName, var images, var name,  var receiverId, var time) async {
     // Get microphone permission
     print("Running ");
     print("AgoraToken "+token.toString());
@@ -74,10 +74,10 @@ class _BodyState extends State<Body> {
     _engine.setEventHandler(RtcEngineEventHandler(
         joinChannelSuccess: (String channel, int uid, int elapsed) {
           print('joinChannelSuccess ${channel} ${uid}');
-          Navigator.push(context, new MaterialPageRoute(
+          Navigator.pushReplacement(context, new MaterialPageRoute(
               builder: (context) =>
                   ReceivedCall(channel: channelName,
-                    agoraToken: token, image: images,name: name, engine: _engine,)));
+                    agoraToken: token, image: images,name: name, engine: _engine,receiverId: receiverId, time: time,id:id)));
         }, userJoined: (int uid, int elapsed) {
       print('userJoined ${uid}');
       setState(() {
@@ -164,7 +164,7 @@ class _BodyState extends State<Body> {
           print("remote user $uid joined");
           setState(() {
             _remoteUid = uid;
-            Navigator.push(context, new MaterialPageRoute(
+            Navigator.pushReplacement(context, new MaterialPageRoute(
                 builder: (context) =>
                     VideoCall(channel:channel,
                         token: token)));
@@ -205,15 +205,7 @@ class _BodyState extends State<Body> {
 
     }
     );
-    Future.delayed(Duration(seconds: 2), () async{
 
-      setState(() {
-        isLoading = false;
-
-        FlutterRingtonePlayer.playRingtone(looping: true);
-      });
-
-    });
 
     Future.delayed(Duration(seconds: 15), () async{
       if(_joined==false){
@@ -292,16 +284,18 @@ class _BodyState extends State<Body> {
                     AsyncSnapshot<DocumentSnapshot> snapshot) {
                   if(snapshot.hasData){
                     var json;
-                    json= snapshot.data!.get("status").toString();
-                    print("StatusAudioCallMain "+json.toString());
-                    if(json.toString()!="null"){
-                      if(json.toString()=="end"){
-                        WidgetsBinding.instance!.addPostFrameCallback((_){
-                          FlutterRingtonePlayer.stop();
-                          Navigator.of(context).pushReplacement(
-                              new MaterialPageRoute(builder: (context) => HomeNav()));
-
-                        });
+                    if(snapshot.data!.exists) {
+                      json = snapshot.data!.get("status").toString();
+                      print("StatusAudioCallMain " + json.toString());
+                      if (json.toString() != "null") {
+                        if (json.toString() == "end") {
+                          WidgetsBinding.instance!.addPostFrameCallback((_) {
+                            FlutterRingtonePlayer.stop();
+                            Navigator.of(context).pushReplacement(
+                                new MaterialPageRoute(
+                                    builder: (context) => HomeNav()));
+                          });
+                        }
                       }
                     }
 
@@ -346,7 +340,7 @@ class _BodyState extends State<Body> {
                                   //startTimmer();
                                   _joined = true;
                                   if(args.type=="VOICE"){
-                                    initPlatformStateVoice(args.agoraToken, args.channelName, args.sender_image, args.sender_name);
+                                    initPlatformStateVoice(args.agoraToken, args.channelName, args.sender_image, args.sender_name,args.sender_id, args.time);
                                   }else{
                                     Navigator.pushReplacement(context, new MaterialPageRoute(
                                         builder: (context) =>
@@ -439,7 +433,15 @@ class _BodyState extends State<Body> {
     id = pref.getString("id").toString();
     name = pref.getString("name").toString();
     image = pref.getString("image").toString();
+    Future.delayed(Duration(seconds: 2), () async{
 
+      setState(() {
+        isLoading = false;
+
+        FlutterRingtonePlayer.playRingtone(looping: true);
+      });
+
+    });
   }
 
 }

@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -9,6 +10,7 @@ import 'package:roccabox_agent/screens/chatscreen.dart';
 import 'package:roccabox_agent/screens/user_Detail.dart';
 import 'package:http/http.dart' as http;
 import 'package:roccabox_agent/services/APIClient.dart';
+import 'package:roccabox_agent/util/customDialoge.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Setting.dart';
@@ -52,6 +54,12 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
     print(widget.totalUserList.length.toString());
     return Scaffold(
       appBar: AppBar(
+        leading: BackButton(
+          onPressed: (){
+            Navigator.of(context).pop();
+          },
+          color: Colors.black,
+        ),
         backgroundColor: Color(0xffFFFFFF),
         elevation: 0,
         centerTitle: true,
@@ -195,6 +203,10 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
   Future<dynamic> getAccessToken(String id, String type) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     var userid = pref.getString("id");
+    var authToken = pref.getString("auth_token").toString();
+    print("AUTH_TOKEN "+authToken.toString());
+    Map<String, String> mapheaders = new HashMap();
+    mapheaders["Authorization"] = authToken.toString();
 
     print("user_id "+userid.toString());
     // print(email)
@@ -202,6 +214,7 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
     var jsonRes;
     http.Response? res;
     var request = http.post(Uri.parse(RestDatasource.AGORATOKEN),
+        headers: mapheaders,
         body: {
 
           "type": type,
@@ -237,6 +250,16 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
         var fcm = jsonRes["receiver"]["firebase_token"].toString();
         updateChatHead(userid.toString(),name, image, type, fcm, id, "Calling", agoraToken, channel, time);
 
+      }else{
+        setState(() {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(jsonRes["message"].toString())));
+          if(jsonRes["code"]!=null){
+            if(jsonRes["code"]==403){
+              showLogoutDialog(context);
+            }
+          }
+        });
       }
 
     } else {

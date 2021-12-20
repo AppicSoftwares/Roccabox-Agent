@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,6 +13,7 @@ import 'package:roccabox_agent/screens/notificationindex.dart';
 import 'package:roccabox_agent/screens/notifications.dart';
 import 'package:roccabox_agent/services/APIClient.dart';
 import 'package:roccabox_agent/services/modelProvider.dart';
+import 'package:roccabox_agent/util/customDialoge.dart';
 import 'package:roccabox_agent/util/languagecheck.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
@@ -46,7 +48,8 @@ class _CallState extends State<Calls> {
       print("FirebaseToken " + value.toString());
       myFcm = value.toString();
     }
-    );    WidgetsBinding.instance!
+    );
+    WidgetsBinding.instance!
         .addObserver(LifecycleEventHandler(resumeCallBack: () async {
       print("Invoke");
     }));
@@ -210,8 +213,13 @@ class _CallState extends State<Calls> {
 
 
   Future<dynamic> getAccessToken(String id, String type, String ChatType) async {
+
     SharedPreferences pref = await SharedPreferences.getInstance();
     var userid = pref.getString("id");
+    var authToken = pref.getString("auth_token").toString();
+    print("AUTH_TOKEN "+authToken.toString());
+    Map<String, String> mapheaders = new HashMap();
+    mapheaders["Authorization"] = authToken.toString();
 
     print("user_id "+userid.toString());
     // print(email)
@@ -219,6 +227,7 @@ class _CallState extends State<Calls> {
     var jsonRes;
     http.Response? res;
     var request = http.post(Uri.parse(RestDatasource.AGORATOKEN),
+        headers: mapheaders,
         body: {
 
           "type": type,
@@ -228,7 +237,7 @@ class _CallState extends State<Calls> {
           "channelKey": ChatType=="agent-admin"?"key_admin":"key_user",
           "id": "10",
           "click_action": 'FLUTTER_NOTIFICATION_CLICK',
-
+          "chName":ChatType=="agent-admin"?"admin_channel":"user_channel",
         });
 
     await request.then((http.Response response) {
@@ -254,6 +263,16 @@ class _CallState extends State<Calls> {
         var fcm = jsonRes["receiver"]["firebase_token"].toString();
         updateChatHead(userid.toString(),name, image, type, fcm, id, "Calling", agoraToken, channel, time);
 
+      }else{
+        setState(() {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(jsonRes["message"].toString())));
+          if(jsonRes["code"]!=null){
+            if(jsonRes["code"]==403){
+              showLogoutDialog(context);
+            }
+          }
+        });
       }
 
     } else {

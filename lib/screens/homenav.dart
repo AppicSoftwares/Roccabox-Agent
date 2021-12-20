@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -5,12 +7,14 @@ import 'package:roccabox_agent/main.dart';
 import 'package:roccabox_agent/screens/call.dart';
 import 'package:roccabox_agent/screens/chat.dart';
 import 'package:roccabox_agent/services/APIClient.dart';
+import 'package:roccabox_agent/util/customDialoge.dart';
 import 'package:roccabox_agent/util/languagecheck.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'Setting.dart';
+import 'login.dart';
 import 'notifications.dart';
 
 class HomeNav extends StatefulWidget {
@@ -22,7 +26,7 @@ class HomeNav extends StatefulWidget {
 
 class _HomeNavState extends State<HomeNav> {
   int _index = 0;
-  List widgets = <Widget>[Chat(), Calls(), Notifications(), Profile()];
+  List widgets = <Widget>[Chat(backShow: false,), Calls(), Notifications(), Profile()];
 FirebaseMessaging? auth;
   var token;
     LanguageChange languageChange = new LanguageChange();
@@ -65,6 +69,7 @@ GlobalKey globalKey = new GlobalKey(debugLabel: 'btm_app_bar');
           selectedItemColor: Color(0xffFFBA00),
           unselectedItemColor: Color(0xff8E8E8E),
           onTap: (page) {
+            getData();
             setState(() {
               _index = page;
             });
@@ -118,6 +123,10 @@ GlobalKey globalKey = new GlobalKey(debugLabel: 'btm_app_bar');
    Future<dynamic> updateToken(String token) async {
   SharedPreferences pref = await SharedPreferences.getInstance();
   var userid = pref.getString("id");
+  var authToken = pref.getString("auth_token").toString();
+  print("AUTH_TOKEN "+authToken.toString());
+  Map<String, String> mapheaders = new HashMap();
+  mapheaders["Authorization"] = authToken.toString();
 
   print("user_id "+userid.toString());
   print("token "+token.toString());
@@ -126,6 +135,7 @@ GlobalKey globalKey = new GlobalKey(debugLabel: 'btm_app_bar');
     var jsonRes;
     http.Response? res;
     var request = http.post(Uri.parse(RestDatasource.SENDTOKEN_URL),
+        headers: mapheaders,
         body: {
 
       "token": token.toString(),
@@ -147,6 +157,17 @@ GlobalKey globalKey = new GlobalKey(debugLabel: 'btm_app_bar');
       print("Response: " + res!.body.toString() + "_");
       print("ResponseJSON: " + jsonRes.toString() + "_");
 
+      if(jsonRes["status"].toString()=="false"){
+        setState(() {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(jsonRes["message"].toString())));
+          if(jsonRes["code"]!=null){
+            if(jsonRes["code"]==403){
+              showLogoutDialog(context);
+            }
+          }
+        });
+      }
 
     } else {
 
@@ -175,6 +196,51 @@ GlobalKey globalKey = new GlobalKey(debugLabel: 'btm_app_bar');
   }
 
 
+  Future getData() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    var userid = pref.getString("id");
+    var authToken = pref.getString("auth_token").toString();
+    print("AUTH_TOKEN "+authToken.toString());
+    Map<String, String> mapheaders = new HashMap();
+    mapheaders["Authorization"] = authToken.toString();
+
+    var jsonRes;
+    var response =
+    await http.post(Uri.parse(RestDatasource.BASE_URL + 'userProfile'),
+        headers: mapheaders,
+        body: {
+          "user_id":userid
+        });
+
+    if (response.statusCode == 200) {
+      var apiObj = JsonDecoder().convert(response.body.toString());
+      if(apiObj["status"]==true){
+        var data = apiObj["data"];
+        if(apiObj["data"]["status"].toString()!="1"){
+          var pref = await SharedPreferences.getInstance();
+          pref.clear();
+          pref.commit();
+          var result  = new MaterialPageRoute(builder: (context) => Login());
+          Navigator.of(context,rootNavigator: true).pushAndRemoveUntil(result, (route) => false);
+
+
+        }
+      }else{
+        setState(() {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(jsonRes["message"].toString())));
+          if(jsonRes["code"]!=null){
+            if(jsonRes["code"]==403){
+              showLogoutDialog(context);
+            }
+          }
+        });
+      }
+
+    } else {
+      throw Exception('Failed to load album');
+    }
+  }
 
 
 

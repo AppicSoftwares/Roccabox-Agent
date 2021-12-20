@@ -19,11 +19,13 @@ import 'package:roccabox_agent/screens/imageScreen.dart';
 import 'package:roccabox_agent/screens/videoScreen.dart';
 import 'package:roccabox_agent/services/APIClient.dart';
 import 'package:roccabox_agent/services/constant.dart';
+import 'package:roccabox_agent/util/customDialoge.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:video_player/video_player.dart';
 
 import '../main.dart';
+import 'chat.dart';
 import 'documentScreen.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -44,7 +46,7 @@ class _ChatScreenState extends State<ChatScreen> {
   var message = "";
   int _limit = 20;
   int _limitIncrement = 20;
-  
+  var id;
   var name;
   var image;
   File? imageFile;
@@ -55,6 +57,7 @@ class _ChatScreenState extends State<ChatScreen> {
   late FirebaseAuth mAuth;
   var token;
   User? user;
+  UserList? userr;
   bool sendimage = false;
   late VideoPlayerController _controller;
 //  final databaseRef = FirebaseDatabase.instance.reference(); //database reference object
@@ -63,6 +66,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     currentInstance = "CHAT_SCREEN";
     chatUser = widget.receiverId;
+    getChatData();
     focusNode.addListener(onFocusChange);
     listScrollController.addListener(_scrollListener);
     auth = FirebaseMessaging.instance;
@@ -618,33 +622,37 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  Widget chatMessage(List<QueryDocumentSnapshot<Object?>> listMessage,
-      List<QueryDocumentSnapshot<Object?>> docs) {
-    print("SizeofList " + listMessage.length.toString() + "");
-
+  Widget chatMessage(List<QueryDocumentSnapshot<Object?>> listMessage, List<QueryDocumentSnapshot<Object?>> docs) {
+    print("SizeofList "+listMessage.length.toString()+"");
     return ListView.builder(
-      itemCount: listMessage.length,
+      itemCount:listMessage.length ,
       reverse: true,
       itemBuilder: (BuildContext context, int index) {
+        var hour = DateTime.fromMillisecondsSinceEpoch(int.parse(docs[index].get("timestamp")) ).hour.toString() +":";
+        var min = DateTime.fromMillisecondsSinceEpoch(int.parse(docs[index].get("timestamp")) ).minute.toString();
+        if(min.length<2){
+          min = "0"+min;
 
+        }
+        var datetime = DateTime.fromMillisecondsSinceEpoch(int.parse(docs[index].get("timestamp")) ).day.toString()+"/"+DateTime.fromMillisecondsSinceEpoch(int.parse(docs[index].get("timestamp")) ).month.toString()+"/"+DateTime.fromMillisecondsSinceEpoch(int.parse(docs[index].get("timestamp")) ).year.toString();
+        var date = hour+min;
+        print(date);
+        print(datetime);
         return docs[index].get("content")!=""?Padding(
           padding: const EdgeInsets.all(10.0),
           child: Column(
-            crossAxisAlignment:
-                docs[index].get("idFrom").toString() == widget.senderId
-                    ? CrossAxisAlignment.end
-                    : CrossAxisAlignment.start,
+            crossAxisAlignment: docs[index].get("idFrom").toString()==widget.senderId?CrossAxisAlignment.end:CrossAxisAlignment.start,
             children: [
               docs[index].get("type")=="document"?GestureDetector(
                 onTap: (){
-                    if(docs[index].get("content")!=null){
-                      if(docs[index].get("content")!=""){
-                        print("OnTap Document");
-                        Navigator.push(context, new MaterialPageRoute(builder: (context) => DocumentScreen(path: docs[index].get("content"),)));
+                  if(docs[index].get("content")!=null){
+                    if(docs[index].get("content")!=""){
+                      print("OnTap Document");
+                      Navigator.push(context, new MaterialPageRoute(builder: (context) => DocumentScreen(path: docs[index].get("content"),)));
 
-                      }
                     }
-                  },
+                  }
+                },
                 child: Material(
                   borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(30.0),
@@ -662,26 +670,64 @@ class _ChatScreenState extends State<ChatScreen> {
                       ? Colors.blueAccent
                       : kPrimaryColor,
                   child:Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Container(
-                              height: 50,
-                              width: 50,
-                              child:Image.asset("assets/doc_icon.png")
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Container(
+                            height: 50,
+                            width: 50,
+                            child:Image.asset("assets/doc_icon.png")
+
+                        ),
+                      ),
+                      Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(8.0,8.0,8.0,0.0),
+                            child: Container(
+                                child:Text("Document", style: TextStyle(color:Colors.white),)
+
+                            ),
 
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Container(
-                              child:Text("Document", style: TextStyle(color:Colors.white),)
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(),
+                                Row(
+                                  children: [
+                                    Text(date.toString(),
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.white
+                                      ),),
+                                    Text("  ",
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.white
+                                      ),),
+                                    Text(datetime.toString(),
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.white
+                                      ),),
+                                  ],
+                                ),
 
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               )
 
@@ -723,19 +769,59 @@ class _ChatScreenState extends State<ChatScreen> {
 
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Container(
-                              child:Text("Video", style: TextStyle(color:Colors.white),)
+                        Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Container(
+                                  child:Text("Video", style: TextStyle(color:Colors.white),)
 
-                          ),
+                              ),
+
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Container(),
+                                  Row(
+                                    children: [
+                                      Text(date.toString(),
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.white
+                                        ),),
+                                      Text("  ",
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.white
+                                        ),),
+                                      Text(datetime.toString(),
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.white
+                                        ),),
+                                    ],
+                                  ),
+
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  )): docs[index].get("type")=="image"?GestureDetector(
+                  )):  docs[index].get("type")=="image"?GestureDetector(
                 onTap: (){
                   if(docs[index].get("content")!=null){
                     if(docs[index].get("content")!=""){
+                      print("OnTap Image");
+
                       Navigator.push(context, new MaterialPageRoute(builder: (context) => ImageScreen(image: docs[index].get("content"),)));
 
                     }
@@ -743,61 +829,148 @@ class _ChatScreenState extends State<ChatScreen> {
                 },
                 child: Container(
                   child: Material(
-                    child: CachedNetworkImage(
-                      placeholder: (con, url ){
-                        return Image.asset(
-                          'assets/img_not_available.png',
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        CachedNetworkImage(
+                          placeholder: (con, url ){
+                            return Image.asset(
+                              'assets/placeholder.png',
+                              width: 200.0,
+                              height: 200.0,
+                              fit: BoxFit.fill,
+                            );
+                          },
+                          errorWidget:(con,url,error){
+                            return Material(
+                              child: Image.asset(
+                                'assets/img_not_available.png',
+                                width: 200.0,
+                                height: 200.0,
+                                fit: BoxFit.cover,
+                              ),
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(8.0),
+                              ),
+                            );
+                          },
+                          imageUrl: docs[index].get("content"),
                           width: 200.0,
                           height: 200.0,
                           fit: BoxFit.fill,
-                        );
-                      },
-                      errorWidget:(con,url,error){
-                        return Material(
-                          child: Image.asset(
-                            'assets/img_not_available.png',
-                            width: 200.0,
-                            height: 200.0,
-                            fit: BoxFit.cover,
-                          ),
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(8.0),
-                          ),
-                        );
-                      },
-                      imageUrl: docs[index].get("content"),
-                      width: 200.0,
-                      height: 200.0,
-                      fit: BoxFit.fill,
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+
+                          children: [
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(),
+                                Row(
+                                  children: [
+                                    Text(date.toString(),
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.black
+                                      ),),
+                                    Text("  ",
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.black
+                                      ),),
+                                    Text(datetime.toString(),
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.black
+                                      ),),
+                                  ],
+                                ),
+
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                     borderRadius: BorderRadius.all(Radius.circular(8.0)),
                   ),
                   margin: EdgeInsets.only(bottom:docs[index].get("idFrom").toString() != widget.senderId ? 20.0 : 10.0, right: 10.0),
                 ),
-              ):Material(
-                  borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(30.0),
-                      bottomRight: Radius.circular(30.0),
-                      topLeft: docs[index].get("idFrom").toString() ==
-                              widget.senderId
-                          ? Radius.circular(30.0)
-                          : Radius.circular(0.0),
-                      topRight: docs[index].get("idFrom").toString() ==
-                              widget.senderId
-                          ? Radius.circular(0)
-                          : Radius.circular(30.0)),
+              ): Material(
+                  borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30.0),bottomRight: Radius.circular(30.0),
+                      topLeft: docs[index].get("idFrom").toString()==widget.senderId?Radius.circular(30.0):Radius.circular(0.0),
+                      topRight: docs[index].get("idFrom").toString()==widget.senderId?Radius.circular(0):Radius.circular(30.0)),
                   elevation: 5.0,
-                  color: docs[index].get("idFrom").toString() != widget.senderId
-                      ? Colors.blueAccent
-                      : Color(0xffFFBA00),
+                  color: docs[index].get("idFrom").toString()!=widget.senderId?Colors.blueAccent: Color(0xffFFBA00),
                   child: Padding(
                     padding:
-                        EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-                    child:Text(
-                      docs[index].get("content"),
-                      style: TextStyle(color: Colors.white, fontSize: 15),
+                    EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              flex:1,
+                              child: Text(
+                                docs[index].get("content"),
+                                style: TextStyle(color: Colors.white, fontSize: 15),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+
+                          children: [
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(),
+                                Row(
+                                  children: [
+                                    Text(date.toString(),
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.white
+                                      ),),
+                                    Text("  ",
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.white
+                                      ),),
+                                    Text(datetime.toString(),
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.white
+                                      ),),
+                                  ],
+                                ),
+
+                              ],
+                            ),
+                          ],
+                        ),
+
+                      ],
                     ),
                   )),
+
+
             ],
           ),
         ):SizedBox(height: 0,);
@@ -822,6 +995,7 @@ class _ChatScreenState extends State<ChatScreen> {
       },
     );
   }
+
 
   Widget buildInput() {
     return Container(
@@ -1092,11 +1266,11 @@ void updateSeccond(String msg) {
                .millisecondsSinceEpoch
                .toString(),
            'type': "text",
-           'image': widget.image,
+           'image': userr!.image,
            'agent': name,
-           'admin': widget.name,
+           'admin': userr!.name,
            'clicked': "true",
-           'fcmToken': widget.fcmToken,
+           'fcmToken': userr!.fcmToken,
            'chatType':"agent-admin"
          },
        );
@@ -1121,7 +1295,7 @@ void updateSeccond(String msg) {
              'type': "text",
              'image': image,
              'agent': name,
-             'admin': widget.name,
+             'admin': userr!.name,
              'clicked': "false",
              'fcmToken': token,
              'chatType':"agent-admin"
@@ -1411,11 +1585,11 @@ void updateSeccond(String msg) {
                 .millisecondsSinceEpoch
                 .toString(),
             'type': type == 1 ? "image" : type == 2 ? "video" : "document",
-            'image': widget.image,
+            'image': userr!.image,
             'agent': name,
-            'admin': widget.name,
+            'admin': userr!.name,
             'clicked': "true",
-            'fcmToken': widget.fcmToken,
+            'fcmToken': userr!.fcmToken,
             'chatType':"agent-admin"
           },
         );
@@ -1440,7 +1614,7 @@ void updateSeccond(String msg) {
               'type': type == 1 ? "image" : type == 2 ? "video" : "document",
               'image': image,
               'agent': name,
-              'admin': widget.name,
+              'admin': userr!.name,
               'clicked': "false",
               'fcmToken': token,
               'chatType':"agent-admin"
@@ -1468,9 +1642,9 @@ void updateSeccond(String msg) {
                 .millisecondsSinceEpoch
                 .toString(),
             'type': type == 1 ? "image" : type == 2 ? "video" : "document",
-            'image': widget.image,
+            'image': userr!.image,
             'agent': name,
-            'user': widget.name,
+            'user': userr!.name,
             'clicked': "true",
             'fcmToken': widget.fcmToken,
             'chatType':"agent-user"
@@ -1497,7 +1671,7 @@ void updateSeccond(String msg) {
               'type': type == 1 ? "image" : type == 2 ? "video" : "document",
               'image': image,
               'agent': name,
-              'user': widget.name,
+              'user': userr!.name,
               'clicked': "false",
               'fcmToken': token,
               'chatType':"agent-user"
@@ -1512,6 +1686,10 @@ void updateSeccond(String msg) {
   Future<dynamic> getAccessToken(String id, String type) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     var userid = pref.getString("id");
+    var authToken = pref.getString("auth_token").toString();
+    print("AUTH_TOKEN "+authToken.toString());
+    Map<String, String> mapheaders = new HashMap();
+    mapheaders["Authorization"] = authToken.toString();
 
     print("user_id "+userid.toString());
     // print(email)
@@ -1519,16 +1697,16 @@ void updateSeccond(String msg) {
     var jsonRes;
     http.Response? res;
     var request = http.post(Uri.parse(RestDatasource.AGORATOKEN),
+        headers: mapheaders,
         body: {
-
           "type": type,
           "user_id": userid.toString(),
           "receiver_id": id,
           "channelKey": widget.userType=="user"?"key_user":"key_admin",
           "id": "10",
           "click_action": 'FLUTTER_NOTIFICATION_CLICK',
-          "time": DateTime.now().millisecondsSinceEpoch.toString()
-
+          "time": DateTime.now().millisecondsSinceEpoch.toString(),
+          "chName":widget.userType =="admin"?"admin_channel":"user_channel",
 
         });
 
@@ -1555,6 +1733,17 @@ void updateSeccond(String msg) {
         var fcm = jsonRes["receiver"]["firebase_token"].toString();
         registerCall(userid.toString(),name, image, type, fcm, id, "Calling", agoraToken, channel, time);
 
+      }else{
+        setState(() {
+          isLoading = false;
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(jsonRes["message"].toString())));
+          if(jsonRes["code"]!=null){
+            if(jsonRes["code"]==403){
+              showLogoutDialog(context);
+            }
+          }
+        });
       }
 
     } else {
@@ -1565,7 +1754,7 @@ void updateSeccond(String msg) {
 
 
   void registerCall(String userid, String nm, String img, String type, String fcmToken,String idd, String status, String agoraToken, String channel, String time) async {
-
+  print("MethodRun");
     var documentReference = FirebaseFirestore.instance
         .collection('call_master')
         .doc("call_head")
@@ -1666,7 +1855,7 @@ void updateSeccond(String msg) {
               "image":widget.image,
               "receiverId":widget.receiverId,
               "senderid":widget.senderId,
-              "fcm":widget.fcmToken,
+              "fcm":userr!.fcmToken,
               'body': type.toString(),
               'title': name,
               "channelKey": widget.userType=="admin"?"key_admin":"key_agent",
@@ -1690,38 +1879,52 @@ void updateSeccond(String msg) {
 
     message= "";
   }
-/*  Future<File> getFileFromUrl(String url, {name}) async {
-    var fileName = 'testonline';
-    if (name != null) {
-      fileName = name;
-    }
-    try {
-      var data = await http.get(Uri.parse(url));
-      var bytes = data.bodyBytes;
-      var dir = await getApplicationDocumentsDirectory();
-      File file = File("${dir.path}/" + fileName + ".pdf");
-      print("pathh"+dir.path);
-      imageFromPdfFile(dir.path);
-      File urlFile = await file.writeAsBytes(bytes);
-      return urlFile;
-    } catch (e) {
-      throw Exception("Error opening url file");
+
+
+
+
+  Future getChatData() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    var authToken = pref.getString("auth_token").toString();
+    print("AUTH_TOKEN "+authToken.toString());
+    Map<String, String> mapheaders = new HashMap();
+    mapheaders["Authorization"] = authToken.toString();
+
+    var jsonRes;
+    var response =
+    await http.post(Uri.parse(RestDatasource.BASE_URL + 'userProfile'),
+        headers: mapheaders,
+        body: {
+          "user_id":widget.receiverId.toString()
+        });
+
+    if (response.statusCode == 200) {
+      var apiObj = JsonDecoder().convert(response.body.toString());
+      if(apiObj["status"]==true){
+        var data = apiObj["data"];
+        userr = new UserList();
+        userr!.chatType = "user-admin";
+        userr!.name = data["name"];
+        userr!.id = widget.receiverId;
+        userr!.fcmToken = data["firebase_token"];
+        userr!.image = data["image"];
+      }else{
+        setState(() {
+          isLoading = false;
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(jsonRes["message"].toString())));
+          if(jsonRes["code"]!=null){
+            if(jsonRes["code"]==403){
+              showLogoutDialog(context);
+            }
+          }
+        });
+      }
+
+    } else {
+      throw Exception('Failed to load album');
     }
   }
-  imageFromPdfFile(String pdfFile) async {
-    final document = await PdfDocument.openFile(pdfFile);
-    final page = await document.getPage(1);
-    final pageImage = await page.render(width: page.width, height: page.height);
-    await page.close();
-    print("ImageBytes "+pageImage!.bytes.toString());
-
-    //... now convert
-    // .... pageImage.bytes to image
-  }*/
-
-
-
-
 
 
 }

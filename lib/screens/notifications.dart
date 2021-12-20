@@ -1,16 +1,27 @@
+import 'dart:collection';
+import 'dart:convert';
 import 'dart:math';
+import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/src/provider.dart';
+import 'package:roccabox_agent/screens/assigned_users.dart';
 
 import 'package:roccabox_agent/screens/homenav.dart';
+import 'package:roccabox_agent/services/APIClient.dart';
 import 'package:roccabox_agent/services/modelProvider.dart';
+import 'package:roccabox_agent/util/customDialoge.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../main.dart';
+import 'Setting.dart';
+import 'chat.dart';
 
 class Notifications extends StatefulWidget {
+  String? payload = "";
+  Notifications({Key? key, this.payload}):super(key: key);
+
   @override
  _NotificationsState createState() => _NotificationsState();
 
@@ -33,11 +44,15 @@ class _NotificationsState extends State<Notifications> {
     'Special Place',
   ];
 
+  List<TotalUserList> totalUserList = [];
 
   List<String> titleList = [];
   List<String> bodyList = [];
   List<String> isread = [];
-
+  List<String> imageList = [];
+  List<String> screenList = [];
+  List<String> idList = [];
+  var isdata = false;
 
 
   @override
@@ -82,7 +97,7 @@ class _NotificationsState extends State<Notifications> {
                 bodyList.clear();
                 notificationCount = 0;
                 context.read<Counter>().getNotify();
-
+                isdata = false;
                 setState(() {
 
                 });
@@ -105,7 +120,7 @@ class _NotificationsState extends State<Notifications> {
           ),
         ],
       ),
-      body: ListView.separated(
+      body: isdata?ListView.separated(
         itemCount: titleList.length,
         separatorBuilder: (BuildContext context, int index) {
           return Divider(
@@ -113,8 +128,28 @@ class _NotificationsState extends State<Notifications> {
           );
         },
         itemBuilder: (BuildContext context, int index) {
-          return ListTile(
+
+          print(screenList.length.toString()+"*");
+          return isdata?ListTile(
             isThreeLine: true,
+            onTap: (){
+              if(screenList!=null && screenList.isNotEmpty){
+                if(screenList.elementAt(index)!=""){
+                  if(screenList.elementAt(index)=="CHAT_SCREEN"){
+                    Navigator.pushAndRemoveUntil(context, new MaterialPageRoute(builder: (context)=> HomeNav()), (r)=> false);
+
+                    /*   if(idList!=null) {
+                      if (idList.elementAt(index) != "") {
+                        Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context)=> Chat()));
+                      }
+                    }*/
+                  }else if(screenList.elementAt(index)=="NOTIFICATION_SCREEN"){
+                    Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context)=> AssignedUsersScreen(totalUserList: totalUserList,)));
+
+                  }
+                }
+              }
+            },
             leading: CircleAvatar(
               backgroundColor:
               Colors.primaries[Random().nextInt(Colors.primaries.length)],
@@ -135,30 +170,122 @@ class _NotificationsState extends State<Notifications> {
               bodyList[index],
               style: TextStyle(fontSize: 12, color: Color(0xff818181)),
             ),
-          );
+          ): Center(child:Image.asset('assets/no_notification_yet.png'));
         },
-      ),
+      ): Center(child:Image.asset('assets/no_notification_yet.webp')),
     );
   }
 
 
 
   Future<void> getData() async {
+    getUserList();
     List<String> isRead = [];
     SharedPreferences preferences = await SharedPreferences.getInstance();
-    titleList = preferences.getStringList("titleList")!;
+    if(preferences.containsKey("titleList")) {
+      isdata = true;
+      titleList = preferences.getStringList("titleList")!;
+    }else{
+      isdata = false;
+    }
     bodyList = preferences.getStringList("bodyList")!;
     isread = preferences.getStringList("isRead")!;
+   // imageList = preferences.getStringList("imageList")!;
+    screenList = preferences.getStringList("screenList")!;
+   // idList = preferences.getStringList("idList")!;
     isread.forEach((element) {
       isRead.add("true");
     });
+
     preferences.setStringList("isRead", isRead);
     preferences.commit();
+    notificationCount = 0;
+    context.read<Counter>().notifyListeners();
+
     setState(() {
       titleList = titleList.reversed.toList();
       bodyList = bodyList.reversed.toList();
+     // imageList = imageList.reversed.toList();
+     // idList = idList.reversed.toList();
+      screenList = screenList.reversed.toList();
+
     });
   }
+
+  Future<dynamic> getUserList() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    var id = pref.getString("id").toString();
+    var authToken = pref.getString("auth_token").toString();
+    print("AUTH_TOKEN "+authToken.toString());
+    Map<String, String> mapheaders = new HashMap();
+    mapheaders["Authorization"] = authToken.toString();
+
+    print("id "+id.toString()+"");
+    var request = http.get(Uri.parse(
+      RestDatasource.GETASSIGNEDUSER_URL + id,
+    ), headers: mapheaders);
+
+    var jsonRes;
+    var jsonArray;
+    var res;
+
+    await request.then((http.Response response) {
+      res = response;
+      final JsonDecoder _decoder = new JsonDecoder();
+      jsonRes = _decoder.convert(response.body.toString());
+      print("Ress" + jsonRes.toString() + "");
+    });
+
+    if (res.statusCode == 200) {
+      print("Response: " + jsonRes.toString() + "_");
+
+      if (jsonRes["status"].toString() == "true") {
+        totalUserList.clear();
+        jsonArray = jsonRes["data"];
+
+        if (jsonArray != null) {
+          if (jsonArray.length > 0) {
+            for (var i = 0; i < jsonArray.length; i++) {
+              TotalUserList modelSearch = new TotalUserList();
+              modelSearch.name = jsonArray[i]["name"];
+              modelSearch.userId = jsonArray[i]["userId"].toString();
+              modelSearch.email = jsonArray[i]["email"].toString();
+              modelSearch.phone = jsonArray[i]["phone"].toString();
+              modelSearch.enqID = jsonArray[i]["enqID"].toString();
+              modelSearch.property_image = jsonArray[i]["property_image"].toString();
+              modelSearch.image = jsonArray[i]["image"].toString();
+              modelSearch.filter_id = jsonArray[i]["filter_id"].toString();
+              modelSearch.firebase_token = jsonArray[i]["firebase_token"].toString();
+              modelSearch.property_Rid =
+                  jsonArray[i]["property_Rid"].toString();
+              modelSearch.message = jsonArray[i]["message"].toString();
+
+              totalUserList.add(modelSearch);
+            }
+          }
+        }
+        print("ppr " + totalUserList.length.toString() + "^");
+
+        setState(() {
+        });
+      } else {
+        setState(() {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(jsonRes["message"].toString())));
+          if(jsonRes["code"]!=null){
+            if(jsonRes["code"]==403){
+              showLogoutDialog(context);
+            }
+          }
+        });
+      }
+    } else {
+      setState(() {
+
+
+      });
+    }}
+
 }
 /*
 ListView.separated(

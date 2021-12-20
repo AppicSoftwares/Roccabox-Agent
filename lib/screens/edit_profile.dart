@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'package:email_validator/email_validator.dart';
@@ -10,6 +11,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:roccabox_agent/main.dart';
 import 'package:roccabox_agent/services/APIClient.dart';
+import 'package:roccabox_agent/util/customDialoge.dart';
 import 'package:roccabox_agent/util/languagecheck.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -25,6 +27,8 @@ class _EditProfileState extends State<EditProfile> {
   TextEditingController nameController = new TextEditingController();
   TextEditingController emailController = new TextEditingController();
   TextEditingController numberController = new TextEditingController();
+  var country_code = "34";
+
   @override
   void initState() {
     getData();
@@ -69,6 +73,11 @@ class _EditProfileState extends State<EditProfile> {
     String phone,
   ) async {
 
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    var authToken = pref.getString("auth_token").toString();
+    print("AUTH_TOKEN "+authToken.toString());
+    Map<String, String> mapheaders = new HashMap();
+    mapheaders["Authorization"] = authToken.toString();
 
     print("Id "+id+"");
         print("phone "+phone +"");
@@ -79,6 +88,7 @@ class _EditProfileState extends State<EditProfile> {
         RestDatasource.BASE_URL + "updateProfile",
       ),
     );
+    request.headers["Authorization"] = authToken.toString();
     if(firstName.toString() != "null" || firstName.toString()!="") {
       request.fields["name"] = firstName;
     }
@@ -90,7 +100,9 @@ class _EditProfileState extends State<EditProfile> {
     if(phone.toString() != "null" || firstName.toString()!="") {
       request.fields["phone"] = phone;
     }
-
+    if(country_code.toString() != "null" || country_code.toString()!="") {
+      request.fields["country_code"] = country_code;
+    }
     request.fields["id"] = id;
     //request.files.add(await http.MultipartFile.fromPath(base64Image, fileName));
     if (file != null) {
@@ -122,7 +134,8 @@ class _EditProfileState extends State<EditProfile> {
         prefs.setString('image', jsonRes["data"]["image"].toString());
         prefs.setString('name', jsonRes["data"]["name"].toString());
         prefs.setString('phone', jsonRes["data"]["phone"].toString());
-        
+        prefs.setString('country_code', jsonRes["data"]["country_code"].toString());
+
 
         
 
@@ -135,43 +148,25 @@ class _EditProfileState extends State<EditProfile> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(jsonRes["message"].toString())));
-        // Fluttertoast.showToast(
-        //     msg: jsonRes["message"].toString(),
-        //     toastLength: Toast.LENGTH_SHORT,
-        //     gravity: ToastGravity.CENTER,
-        //     timeInSecForIosWeb: 2,
-        //     backgroundColor: Colors.green,
-        //     textColor: Colors.white,
-        //     fontSize: 16.0);
-        // print("Data " + jsonRes['data']['token'] + "*");
+
       } else {
         setState(() {
           isLoading = false;
           ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(jsonRes["message"].toString())));
-          // Fluttertoast.showToast(
-          //     msg: "Exception: " + jsonRes["message"].toString(),
-          //     toastLength: Toast.LENGTH_SHORT,
-          //     gravity: ToastGravity.CENTER,
-          //     timeInSecForIosWeb: 2,
-          //     backgroundColor: Colors.red,
-          //     textColor: Colors.white,
-          //     fontSize: 16.0);
+          if(jsonRes["code"]!=null){
+            if(jsonRes["code"]==403){
+              showLogoutDialog(context);
+            }
+          }
         });
       }
     } else {
       setState(() {
         isLoading = false;
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Please try leter")));
-        // Fluttertoast.showToast(
-        //     msg: "Exception: " + jsonRes["message"].toString(),
-        //     toastLength: Toast.LENGTH_SHORT,
-        //     gravity: ToastGravity.CENTER,
-        //     timeInSecForIosWeb: 2,
-        //     backgroundColor: Colors.red,
-        //     textColor: Colors.white,
-        //     fontSize: 16.0);
+            SnackBar(content: Text("Please try later")));
+
       });
     }
   }
@@ -304,9 +299,15 @@ class _EditProfileState extends State<EditProfile> {
                     decoration: InputDecoration(
                         prefixIcon: CountryCodePicker(
                           // showFlag: false,
-                          onChanged: print,
+                          onChanged: (val)=>{
+                            //sendPhone = "",
+                            country_code = val.toString().substring(1),
+                            print(country_code.toString()),
+
+
+                          },
                           // Initial selection and favorite can be one of code ('IT') OR dial_code('+39')
-                          initialSelection: 'gb',
+                          initialSelection: "+"+country_code.toString(),
                           // favorite: ['+91', 'FR'],
                           // optional. Shows only country name and flag
                           showCountryOnly: false,
@@ -431,17 +432,14 @@ class _EditProfileState extends State<EditProfile> {
     numberController.text = pref.getString("phone").toString();
     twodigitnumber = numberController.text.substring(0, 2);
     print("sddd"+twodigitnumber.toString());
-  
-    
+    country_code = pref.getString("country_code").toString();
+
+
     image = pref.getString("image");
     id = pref.getString("id").toString();
         
 
-    print("name " + name + "");
-    print("id " + id + "");
-    print("email " + email + "");
-    print("image " + image + "");
     setState(() {});
-    
+
   }
 }

@@ -2,6 +2,7 @@
 import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:roccabox_agent/agora/component/roundedButton.dart';
 import 'package:roccabox_agent/agora/constants.dart';
@@ -28,17 +29,11 @@ class _MyAppState extends State<VideoCall> {
   final firestoreInstance = FirebaseFirestore.instance;
   String?status;
   String? cam = "front";
-  var isLoading = true;
   bool remoteUser = false;
   @override
   void initState() {
     super.initState();
-      Future.delayed(Duration(seconds: 2), () async{
-        setState(() {
-          isLoading = false;
-        });
 
-      });
     initAgora();
   }
 
@@ -52,11 +47,18 @@ class _MyAppState extends State<VideoCall> {
 
   Future<void> initAgora() async {
     // retrieve permissions
-    Future.delayed(Duration(seconds: 15), () async{
+    Future.delayed(Duration(seconds: 30), () async{
       if(remoteUser==false){
         _engine.leaveChannel();
         _engine.destroy();
-        Navigator.of(context).pop();
+        updateChatHead(widget.senderId, widget.time, "end");
+        SchedulerBinding.instance!.addPostFrameCallback((_) {
+
+          Navigator.pushAndRemoveUntil(
+              context,
+              new MaterialPageRoute(
+                  builder: (context) => HomeNav()), (r)=> false);
+        });
       }
 
     });
@@ -84,8 +86,8 @@ class _MyAppState extends State<VideoCall> {
         },
         userOffline: (int uid, UserOfflineReason reason) {
           print("remote user $uid left channel");
-          Navigator.pushReplacement(
-              context, new MaterialPageRoute(builder: (context) => HomeNav()));
+          Navigator.pushAndRemoveUntil(
+              context, new MaterialPageRoute(builder: (context) => HomeNav()),(r)=> false);
           _engine.destroy();
           setState(() {
             _remoteUid = null;
@@ -94,8 +96,8 @@ class _MyAppState extends State<VideoCall> {
         },
         leaveChannel: (RtcStats reason) {
           print("remote user left channel");
-          Navigator.pushReplacement(
-              context, new MaterialPageRoute(builder: (context) => HomeNav()));
+          Navigator.pushAndRemoveUntil(
+              context, new MaterialPageRoute(builder: (context) => HomeNav()), (r)=> false);
 
           _engine.destroy();
           //Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context)=> HomeNav()));
@@ -114,7 +116,7 @@ class _MyAppState extends State<VideoCall> {
     SizeConfig().init(context);
     return Scaffold(
 
-      body:isLoading== true?Center(child: CircularProgressIndicator(),):  StreamBuilder<DocumentSnapshot>(
+      body:StreamBuilder<DocumentSnapshot>(
           stream: firestoreInstance
               .collection("call_master")
               .doc("call_head")
@@ -129,7 +131,11 @@ class _MyAppState extends State<VideoCall> {
                 if(status.toString()=="end"){
                   _engine.leaveChannel();
                   _engine.destroy();
-                  Navigator.of(context).pop();
+                  WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                        new MaterialPageRoute(
+                            builder: (context) => HomeNav()), (r)=>false);
+                  });
                 }
               }
             }
@@ -183,9 +189,9 @@ class _MyAppState extends State<VideoCall> {
                                 _engine.destroy();
                                 updateChatHead(widget.senderId,widget.time, "end");
 
-                                Navigator.pushReplacement(context,
+                                Navigator.pushAndRemoveUntil(context,
                                     new MaterialPageRoute(
-                                        builder: (context) => HomeNav()));
+                                        builder: (context) => HomeNav()), (r)=> false);
 
                               });
                             },
@@ -259,7 +265,7 @@ class _MyAppState extends State<VideoCall> {
 
   void updateChatHead(String senderID, String time, String status) async {
     Map<String, String> map = new Map();
-    map["status"] = "end";
+    map["status"] = status;
     FirebaseFirestore.instance
         .collection('call_master')
         .doc("call_head")

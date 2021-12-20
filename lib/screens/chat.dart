@@ -10,6 +10,9 @@ import 'package:roccabox_agent/services/modelProvider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Chat extends StatefulWidget {
+  var backShow = false;
+  Chat({Key? key, required this.backShow}):super(key:key);
+
   @override
   State<Chat> createState() => _ChatState();
 }
@@ -42,6 +45,15 @@ class _ChatState extends State<Chat> {
         backgroundColor: Color(0xffFFFFFF),
         elevation: 0,
         centerTitle: true,
+        leading: Visibility(
+          visible:widget.backShow,
+          child: BackButton(
+            color: Colors.black,
+            onPressed: (){
+              Navigator.of(context).pop();
+            },
+          ),
+        ),
         title: Text(
           'Chat',
           style: TextStyle(
@@ -215,6 +227,7 @@ class _ChatState extends State<Chat> {
             .collection("chat_master")
             .doc("chat_head")
             .collection(id)
+            .orderBy('timestamp', descending: true)
             .snapshots(),
         builder:(BuildContext context,
     AsyncSnapshot<QuerySnapshot> snapshot) {

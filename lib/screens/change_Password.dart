@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'package:email_validator/email_validator.dart';
@@ -10,6 +11,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:roccabox_agent/main.dart';
 import 'package:roccabox_agent/services/APIClient.dart';
+import 'package:roccabox_agent/util/customDialoge.dart';
 import 'package:roccabox_agent/util/languagecheck.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -216,7 +218,7 @@ class _EditProfileState extends State<ChangePaasword> {
                             child: Text(
 
                               //Update Password
-                              languageChange.UPDATEPROFILE[langCount],
+                              languageChange.PASSWORDUPDATE[langCount],
                               style: TextStyle(
                                   fontFamily: 'Poppins',
                                   fontSize: 16,
@@ -237,6 +239,11 @@ class _EditProfileState extends State<ChangePaasword> {
   Future<dynamic> changePassword(String oldPassword, String newPassword) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     var id = pref.getString("id").toString();
+    var authToken = pref.getString("auth_token").toString();
+    print("AUTH_TOKEN "+authToken.toString());
+    Map<String, String> mapheaders = new HashMap();
+    mapheaders["Authorization"] = authToken.toString();
+
     setState(() {
       isloading = true;
     });
@@ -250,6 +257,7 @@ class _EditProfileState extends State<ChangePaasword> {
         Uri.parse(RestDatasource.CHANGEPASSWORD_URL
             // RestDatasource.SEND_OTP,
             ),
+        headers: mapheaders,
         body: {
           "user_id": id,
           "oldPassword": oldPassword,
@@ -284,10 +292,15 @@ class _EditProfileState extends State<ChangePaasword> {
       if (jsonRes["status"] == false) {
         setState(() {
           isloading = false;
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(jsonRes["message"].toString())));
+          if(jsonRes["code"]!=null){
+            if(jsonRes["code"]==403){
+              showLogoutDialog(context);
+            }
+          }
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(jsonRes["message"].toString())),
-        );
+
       }
     } else {
       ScaffoldMessenger.of(context)

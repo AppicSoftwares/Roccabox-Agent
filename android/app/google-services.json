@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "781846829235",
+    "firebase_url": "https://roccabox-b7a79-default-rtdb.firebaseio.com",
     "project_id": "roccabox-b7a79",
     "storage_bucket": "roccabox-b7a79.appspot.com"
   },
@@ -22,6 +23,22 @@
           }
         },
         {
+          "client_id": "781846829235-rea1k7rf7u2refud92ltua8qsel6udiv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.roccabox.roccabox",
+            "certificate_hash": "44630c5f412c8cf020361874d26ae35df084f6a4"
+          }
+        },
+        {
+          "client_id": "781846829235-tode8q5b0cgoo74pcctljp15ffl4sh8k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.roccabox.roccabox",
+            "certificate_hash": "63e39771c8dfeae025bfba813dd33e854107005e"
+          }
+        },
+        {
           "client_id": "781846829235-mgvannuup8d3misns25t4tc6p5v9q34m.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -37,6 +54,65 @@
             {
               "client_id": "781846829235-mgvannuup8d3misns25t4tc6p5v9q34m.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "781846829235-5v5d4jjlo295qiudu9ilj9tp0fl22k73.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.roccaboxadmin.roccaboxAdmin"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:781846829235:android:62c69b1cd70b359acbf8c6",
+        "android_client_info": {
+          "package_name": "com.roccaboxadmin.roccabox_admin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "781846829235-01lst99ijcq3ddjol3kf2k4brifh18ui.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.roccaboxadmin.roccabox_admin",
+            "certificate_hash": "44630c5f412c8cf020361874d26ae35df084f6a4"
+          }
+        },
+        {
+          "client_id": "781846829235-86fqs5gf4rja9415uem264p268f5qgf5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.roccaboxadmin.roccabox_admin",
+            "certificate_hash": "5505472042f3991399e0e9f72098798e758ef45d"
+          }
+        },
+        {
+          "client_id": "781846829235-mgvannuup8d3misns25t4tc6p5v9q34m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0FzzKl4EhgcjkMh2QRZBS49pE2d3KwFE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "781846829235-mgvannuup8d3misns25t4tc6p5v9q34m.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "781846829235-5v5d4jjlo295qiudu9ilj9tp0fl22k73.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.roccaboxadmin.roccaboxAdmin"
+              }
             }
           ]
         }
@@ -59,6 +135,22 @@
           }
         },
         {
+          "client_id": "781846829235-q6rq92d3mvbi56ggep868kqhovc3diag.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.roccaboxagent.roccabox_agent",
+            "certificate_hash": "44630c5f412c8cf020361874d26ae35df084f6a4"
+          }
+        },
+        {
+          "client_id": "781846829235-q7i89ibh3uc2ao0b5crorr0aq3smi3q3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.roccaboxagent.roccabox_agent",
+            "certificate_hash": "6ad5eda2d602ad29aec5e4294a68d22c80bd697f"
+          }
+        },
+        {
           "client_id": "781846829235-mgvannuup8d3misns25t4tc6p5v9q34m.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -74,6 +166,13 @@
             {
               "client_id": "781846829235-mgvannuup8d3misns25t4tc6p5v9q34m.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "781846829235-5v5d4jjlo295qiudu9ilj9tp0fl22k73.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.roccaboxadmin.roccaboxAdmin"
+              }
             }
           ]
         }

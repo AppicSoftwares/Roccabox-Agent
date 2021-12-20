@@ -260,7 +260,7 @@ class _SignupState extends State<Signup> {
                               isLoading = true;
                             });
 
-                            var sendPhone =  code!+phone.toString();
+                            var sendPhone =  phone.toString();
                             postApi(
                               
                                 email.toString(),
@@ -332,7 +332,7 @@ class _SignupState extends State<Signup> {
     print("email: " + email.toString().trim() + "_");
     print("password: " + password.toString().trim() + "_");
     print("phone: " + phone.toString().trim() + "_");
-     print("code: " + phone.toString().trim() + "_");
+     print("code: " + code.toString().trim() + "_");
 
 
     print("role_id: " + "2");
@@ -348,7 +348,8 @@ class _SignupState extends State<Signup> {
           "password": password.toString().trim(),
           "phone": phone.toString().trim(),
           "role_id": "2",
-          'name': name.toString()
+          'name': name.toString(),
+          'country_code': code.toString()
         });
 
 /*    Map<String, String> headers = {
@@ -385,13 +386,14 @@ class _SignupState extends State<Signup> {
         // Navigator.pushAndRemoveUntil(context,
         //     MaterialPageRoute(builder: (context) => HomePage()), (r) => false);
       } else {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
+     /*   SharedPreferences prefs = await SharedPreferences.getInstance();
         print('done');
         prefs.setString('id', jsonRes["data"]["id"].toString());
         prefs.setString('email', jsonRes["data"]["email"].toString());
         prefs.setString('name', jsonRes["data"]["name"].toString());
         prefs.setString('phone', jsonRes["data"]["phone"].toString());
-        prefs.commit();
+        prefs.setString('auth_token', jsonRes["auth_token"].toString());
+        prefs.commit();*/
         Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (context) => Login()),
