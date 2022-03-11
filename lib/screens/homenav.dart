@@ -71,7 +71,16 @@ GlobalKey globalKey = new GlobalKey(debugLabel: 'btm_app_bar');
           onTap: (page) {
             getData();
             setState(() {
+
               _index = page;
+              if(_index==0){
+                 currentInstance = "CHAT_SCREEN";
+                  chatUser = "";
+
+              }else{
+                currentInstance = "";
+                chatUser = "";
+              }
             });
           },
           items: [

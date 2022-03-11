@@ -133,7 +133,7 @@ class _SignupState extends State<Signup> {
                       child: TextFormField(
                         showCursor: true,
                         inputFormatters: [
-                          BlacklistingTextInputFormatter(RegExp(r"\s"))
+                          FilteringTextInputFormatter.deny(RegExp(r"\s"))
                         ],
                         keyboardType: TextInputType.emailAddress,
                         validator: (val) {

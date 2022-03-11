@@ -9,6 +9,8 @@ import 'package:roccabox_agent/screens/notifications.dart';
 import 'package:roccabox_agent/services/modelProvider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../main.dart';
+
 class Chat extends StatefulWidget {
   var backShow = false;
   Chat({Key? key, required this.backShow}):super(key:key);
@@ -24,7 +26,8 @@ class _ChatState extends State<Chat> {
   List<UserList> listUser = [];
   String notiCount = "0";
   var id;
- // final databaseRef = FirebaseDatabase.instance.reference(); //database reference object
+
+  // final databaseRef = FirebaseDatabase.instance.reference(); //database reference object
 
   @override
   void initState() {
@@ -33,11 +36,11 @@ class _ChatState extends State<Chat> {
         LifecycleEventHandler(resumeCallBack: () async {
           print("Invoke");
         }
-    ));
+        ));
 
     super.initState();
-
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,10 +49,10 @@ class _ChatState extends State<Chat> {
         elevation: 0,
         centerTitle: true,
         leading: Visibility(
-          visible:widget.backShow,
+          visible: widget.backShow,
           child: BackButton(
             color: Colors.black,
-            onPressed: (){
+            onPressed: () {
               Navigator.of(context).pop();
             },
           ),
@@ -64,41 +67,43 @@ class _ChatState extends State<Chat> {
 
         actions: [
           Padding(
-                padding: EdgeInsets.only(right: 10, top: 5),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(100),
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => NotificationIndex()));
-                  },
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(12),
-                        height: 46,
-                        width: 46,
-                        decoration: BoxDecoration(
-                          color: Color(0xFF979797).withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: SvgPicture.asset(
-                          "assets/Bell.svg",
-                          color: Colors.black54,
-                        ),
-                      ),
-                      Count()
-                    ],
+            padding: EdgeInsets.only(right: 10, top: 5),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(100),
+              onTap: () {
+                notificationCount = 0;
+                context.read<Counter>().getNotify();
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => NotificationIndex()));
+              },
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(12),
+                    height: 46,
+                    width: 46,
+                    decoration: BoxDecoration(
+                      color: Color(0xFF979797).withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: SvgPicture.asset(
+                      "assets/Bell.svg",
+                      color: Colors.black54,
+                    ),
                   ),
-                ),
+                  Count()
+                ],
               ),
+            ),
+          ),
         ],
       ),
-      body: id!=null?
+      body: id != null ?
 
-  /*    FutureBuilder(
+      /*    FutureBuilder(
           future: databaseRef.child("chat_master").child("chat_head").child(id).get(),
           builder:(BuildContext context,
               AsyncSnapshot<DataSnapshot> snapshot) {
@@ -108,7 +113,7 @@ class _ChatState extends State<Chat> {
               if(snapshot.hasData){
                 listUser.clear();
 
-*//* snapshot.data?.value.forEach((element) {
+*/ /* snapshot.data?.value.forEach((element) {
                   var json;
                   UserList model = new UserList();
                   model.id = element.id.toString();
@@ -124,7 +129,7 @@ class _ChatState extends State<Chat> {
                   model.fcm = json["fcmToken"].toString();
 
                   listUser.add(model);
-                });*//*
+                });*/ /*
 
 
 
@@ -223,95 +228,107 @@ class _ChatState extends State<Chat> {
 
 
       StreamBuilder<QuerySnapshot>(
-        stream: firestoreInstance
-            .collection("chat_master")
-            .doc("chat_head")
-            .collection(id)
-            .orderBy('timestamp', descending: true)
-            .snapshots(),
-        builder:(BuildContext context,
-    AsyncSnapshot<QuerySnapshot> snapshot) {
-          if(snapshot.hasData){
-            listUser.clear();
-            snapshot.data?.docs.forEach((element) {
-              var json;
-              print("StreamId "+element.id);
-              json = element.data();
+          stream: firestoreInstance
+              .collection("chat_master")
+              .doc("chat_head")
+              .collection(id)
+              .orderBy('timestamp', descending: true)
+              .snapshots(),
+          builder: (BuildContext context,
+              AsyncSnapshot<QuerySnapshot> snapshot) {
+            if (snapshot.hasData) {
+              listUser.clear();
+              snapshot.data?.docs.forEach((element) {
+                var json;
+                print("StreamId " + element.id);
+                json = element.data();
 
-              if(json["chatType"]=="agent-admin"){
-                UserList model = new UserList();
-                model.id = element.id.toString();
-
-
-                print("StreamName " + json["user"].toString());
-                print("StreamImage " + element.get("image").toString());
-                model.name = json["admin"].toString();
-                model.image = json["image"].toString();
-                model.message = json["msg"].toString();
-                model.clicked = json["clicked"].toString();
-                model.fcmToken = json["fcmToken"].toString();
-                model.chatType = json["chatType"].toString();
-
-                listUser.add(model);
-              }else{
-                UserList model = new UserList();
-                model.id = element.id.toString();
+                if (json["chatType"] == "agent-admin") {
+                  UserList model = new UserList();
+                  model.id = element.id.toString();
 
 
-                print("StreamName " + json["user"].toString());
-                print("StreamImage " + element.get("image").toString());
-                model.name = json["user"].toString();
-                model.image = json["image"].toString();
-                model.message = json["msg"].toString();
-                model.clicked = json["clicked"].toString();
-                model.fcmToken = json["fcmToken"].toString();
-                model.chatType = json["chatType"].toString();
+                  print("StreamName " + json["user"].toString());
+                  print("StreamImage " + element.get("image").toString());
+                  model.name = json["admin"].toString();
+                  model.image = json["image"].toString();
+                  model.message = json["msg"].toString();
+                  model.clicked = json["clicked"].toString();
+                  model.fcmToken = json["fcmToken"].toString();
+                  model.chatType = json["chatType"].toString();
 
-                listUser.add(model);
-              }
+                  listUser.add(model);
+                } else {
+                  UserList model = new UserList();
+                  model.id = element.id.toString();
 
-            });
+
+                  print("StreamName " + json["user"].toString());
+                  print("StreamImage " + element.get("image").toString());
+                  model.name = json["user"].toString();
+                  model.image = json["image"].toString();
+                  model.message = json["msg"].toString();
+                  model.clicked = json["clicked"].toString();
+                  model.fcmToken = json["fcmToken"].toString();
+                  model.chatType = json["chatType"].toString();
+
+                  listUser.add(model);
+                }
+              });
+            }
+            return ListView.separated(
+              itemCount: listUser.length,
+              separatorBuilder: (BuildContext context, int index) {
+                return Divider(
+                  color: Color(0xff707070),
+                );
+              },
+
+              itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                  onTap: () =>
+                      Navigator.push(
+                          context, MaterialPageRoute(builder: (context) =>
+                          ChatScreen(
+                            name: listUser[index].name,
+                            image: listUser[index].image,
+                            receiverId: listUser[index].id,
+                            senderId: id,
+                            fcmToken: listUser[index].fcmToken,
+                            userType: listUser[index].chatType == "agent-admin"
+                                ? "admin"
+                                : "user",))),
+                  leading: listUser[index].image.toString() == "null" ||
+                      listUser[index].image == "" ? CircleAvatar(
+                    backgroundImage: AssetImage('assets/img1.png'),
+                  ) : CircleAvatar(backgroundImage: NetworkImage(
+                      listUser[index].image.toString())),
+                  title: Text(
+                    listUser == null ? "" : listUser[index].name.toString(),
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xff000000)),
+                  ),
+                  subtitle: Text(
+                    listUser == null ? "" : listUser[index].message == null
+                        ? ""
+                        : listUser[index].message.toString(),
+                    style: TextStyle(
+                        fontSize: listUser[index].clicked != null &&
+                            listUser[index].clicked == "true" ? 12 : 16,
+                        color: listUser[index].clicked != null &&
+                            listUser[index].clicked == "true" ? Color(
+                            0xff818181) : Colors.black,
+                        fontWeight: listUser[index].clicked != null &&
+                            listUser[index].clicked == "true" ? FontWeight
+                            .normal : FontWeight.bold),
+                  ),
+                );
+              },
+            );
           }
-          return ListView.separated(
-            itemCount: listUser.length,
-            separatorBuilder: (BuildContext context, int index) {
-              return Divider(
-                color: Color(0xff707070),
-              );
-            },
-
-            itemBuilder: (BuildContext context, int index) {
-              return ListTile(
-                onTap: () =>
-                    Navigator.push(
-                        context, MaterialPageRoute(builder: (context) =>
-                        ChatScreen(name: listUser[index].name,
-                          image: listUser[index].image,
-                          receiverId: listUser[index].id,
-                          senderId: id,fcmToken: listUser[index].fcmToken,userType: listUser[index].chatType=="agent-admin"?"admin":"user",))),
-                leading:listUser[index].image.toString()=="null"  || listUser[index].image==""? CircleAvatar(
-                  backgroundImage: AssetImage('assets/img1.png'),
-                ):CircleAvatar(backgroundImage: NetworkImage(listUser[index].image.toString() )),
-                title: Text(
-                  listUser == null ? "" : listUser[index].name.toString(),
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xff000000)),
-                ),
-                subtitle: Text(
-                  listUser == null ? "" : listUser[index].message == null
-                      ? ""
-                      : listUser[index].message.toString(),
-                  style: TextStyle(fontSize: listUser[index].clicked != null &&  listUser[index].clicked == "true"?12:16, color:  listUser[index].clicked != null &&  listUser[index].clicked == "true"?Color(0xff818181):Colors.black,
-                      fontWeight:listUser[index].clicked != null &&  listUser[index].clicked == "true"?FontWeight.normal:FontWeight.bold ),
-                ),
-              );
-            },
-          );
-
-        }
-      ):
+      ) :
 
 
       Text("No Data Found"),
@@ -325,7 +342,7 @@ class _ChatState extends State<Chat> {
     setState(() {
 
     });
-   /* firestoreInstance.collection("chat_master").get().then((querySnapshot) {
+    /* firestoreInstance.collection("chat_master").get().then((querySnapshot) {
       querySnapshot.docs.forEach((result) {
         firestoreInstance
             .collection("chat_master")
@@ -349,20 +366,26 @@ class _ChatState extends State<Chat> {
               setState(() {
 
               });
-          *//*  listUsers.clear();
+          */ /*  listUsers.clear();
             listUsers.addAll(snapshot!.data!.docs);
             print("LengthofList "+listUsers.length.toString()+"");
-           *//*   *//*querySnapshot.docs.forEach((result) {
+           */ /*   */ /*querySnapshot.docs.forEach((result) {
             print(result.data());
-          });*//*
+          });*/ /*
         });
       });
     });*/
-    
+
+  }
+
+
+  @override
+  void dispose() {
+    currentInstance = "";
+    chatUser = "";
+    super.dispose();
   }
 }
-
-
 class UserList{
   String? name;
   String? id;

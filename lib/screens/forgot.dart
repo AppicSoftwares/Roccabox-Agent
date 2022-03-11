@@ -51,7 +51,7 @@ class _ForgotState extends State<Forgot> {
                   child: TextFormField(
                     showCursor: true,
                     inputFormatters: [
-                      BlacklistingTextInputFormatter(RegExp(r"\s"))
+                      FilteringTextInputFormatter.deny(RegExp(r"\s"))
                     ],
                     keyboardType: TextInputType.emailAddress,
                     onChanged: (val) {

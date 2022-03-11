@@ -584,7 +584,7 @@ class _MyAppState extends State<MyApp> {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
 
       //_showNotification(message);
-
+      print("CurentScreen "+currentInstance+"^");
       Map<String, dynamic>map;
       if(message.notification==null){
         if(message.data!=null){
@@ -609,77 +609,59 @@ class _MyAppState extends State<MyApp> {
                     map["sender_name"],
                     map["token"]));
           }else {
-            if (chatUser == "") {
-              createListMap(map);
-              const AndroidNotificationDetails androidPlatformChannelSpecifics =
-              AndroidNotificationDetails(
-                '10',
-                'agent_channel',
-                channelDescription: 'Agent channel',
-                importance: Importance.max,
-                priority: Priority.high,
-                ticker: 'ticker',
-                enableLights: true,
-                enableVibration: true,
-                playSound: true,
-              );
-              const NotificationDetails platformChannelSpecifics =
-              NotificationDetails(android: androidPlatformChannelSpecifics);
-              await flutterLocalNotificationsPlugin.show(
-                10,
-                message.notification!.title,
-                message.notification!.body,
-                platformChannelSpecifics,
-                payload: message.data.toString()
-              );
-            } else if (chatUser != map["senderid"]) {
-              createListMap(map);
-              const AndroidNotificationDetails androidPlatformChannelSpecifics =
-              AndroidNotificationDetails(
-                '10',
-                'agent_channel',
-                channelDescription: 'Agent channel',
-                importance: Importance.max,
-                priority: Priority.high,
-                ticker: 'ticker',
-                enableLights: true,
-                enableVibration: true,
-                playSound: true,
-              );
-              const NotificationDetails platformChannelSpecifics =
-              NotificationDetails(android: androidPlatformChannelSpecifics);
-              await flutterLocalNotificationsPlugin.show(
-                10,
-                message.notification!.title,
-                message.notification!.body,
-                platformChannelSpecifics,
-                payload: message.data.toString()
-              );
-            }else{
-              print("cond3");
-              createListMap(map);
-              const AndroidNotificationDetails androidPlatformChannelSpecifics =
-              AndroidNotificationDetails(
-                '10',
-                'agent_channel',
-                channelDescription: 'Agent channel',
-                importance: Importance.max,
-                priority: Priority.high,
-                ticker: 'ticker',
-                enableLights: true,
-                enableVibration: true,
-                playSound: true,
-              );
-              const NotificationDetails platformChannelSpecifics =
-              NotificationDetails(android: androidPlatformChannelSpecifics);
-              await flutterLocalNotificationsPlugin.show(
-                10,
-                message.notification!.title,
-                message.notification!.body,
-                platformChannelSpecifics,
-                payload: message.data.toString()
-              );
+            if(currentInstance=="CHAT_SCREEN") {
+              if (chatUser == "") {
 
+              } else if (chatUser != map["senderid"]) {
+                createListMap(map);
+                const AndroidNotificationDetails androidPlatformChannelSpecifics =
+                AndroidNotificationDetails(
+                  '10',
+                  'agent_channel',
+                  channelDescription: 'Agent channel',
+                  importance: Importance.max,
+                  priority: Priority.high,
+                  ticker: 'ticker',
+                  enableLights: true,
+                  enableVibration: true,
+                  playSound: true,
+                );
+                const NotificationDetails platformChannelSpecifics =
+                NotificationDetails(android: androidPlatformChannelSpecifics);
+                await flutterLocalNotificationsPlugin.show(
+                    10,
+                    message.notification!.title,
+                    message.notification!.body,
+                    platformChannelSpecifics,
+                    payload: message.data.toString()
+                );
+              } else {
+                print("cond3");
+
+              }
+            }else{
+              createListMap(map);
+              const AndroidNotificationDetails androidPlatformChannelSpecifics =
+              AndroidNotificationDetails(
+                '10',
+                'agent_channel',
+                channelDescription: 'Agent channel',
+                importance: Importance.max,
+                priority: Priority.high,
+                ticker: 'ticker',
+                enableLights: true,
+                enableVibration: true,
+                playSound: true,
+              );
+              const NotificationDetails platformChannelSpecifics =
+              NotificationDetails(android: androidPlatformChannelSpecifics);
+              await flutterLocalNotificationsPlugin.show(
+                  10,
+                  message.notification!.title,
+                  message.notification!.body,
+                  platformChannelSpecifics,
+                  payload: message.data.toString()
+              );
             }
           }
         }

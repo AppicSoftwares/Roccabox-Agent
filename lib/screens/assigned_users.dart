@@ -35,6 +35,7 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
   var myname = "";
   var myFcm = "";
   FirebaseMessaging? auth;
+  bool isPressed = false;
 
 
 
@@ -111,15 +112,22 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
                 children: [
                   GestureDetector(
                       onTap: () {
-                        getAccessToken(widget.totalUserList[index].userId.toString(), "VOICE");
 
+                        if(!isPressed) {
+                          getAccessToken(widget.totalUserList[index].userId
+                              .toString(), "VOICE");
+
+                        }
                       },
                       child: Icon(Icons.call, color: Colors.black,size: 24)),
                   SizedBox(width: 20,),
                   GestureDetector(
                       onTap: (){
 
-                        getAccessToken(widget.totalUserList[index].userId.toString(), "VIDEO");
+                        if(!isPressed){
+                          getAccessToken(widget.totalUserList[index].userId.toString(), "VIDEO");
+
+                        }
                       },
                       child: Icon(Icons.video_call, color: Colors.black,size: 24)),
 
@@ -201,6 +209,7 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
 
 
   Future<dynamic> getAccessToken(String id, String type) async {
+    isPressed = true;
     SharedPreferences pref = await SharedPreferences.getInstance();
     var userid = pref.getString("id");
     var authToken = pref.getString("auth_token").toString();
@@ -229,7 +238,7 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
 
     await request.then((http.Response response) {
       res = response;
-
+      isPressed = false;
       // msg = jsonRes["message"].toString();
       // getotp = jsonRes["otp"];
       // print(getotp.toString() + '123');t

@@ -195,6 +195,7 @@ class _ProfileState extends State<Profile> {
             ),
             ListTile(
                 onTap: () {
+                  print("UserId "+user.id.toString()+"");
                   if(user.id!=null && user.id.toString()!="null" && user.id.toString()!="") {
                     Navigator.push(
                         context, MaterialPageRoute(builder: (context) =>
@@ -361,10 +362,15 @@ class _ProfileState extends State<Profile> {
   Future getChatData() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     id = pref.getString("id").toString();
+    var authToken = pref.getString("auth_token").toString();
+    print("AUTH_TOKEN "+authToken.toString());
+    Map<String, String> mapheaders = new HashMap();
+    mapheaders["Authorization"] = authToken.toString();
 
     var jsonRes;
     var response =
     await http.post(Uri.parse(RestDatasource.BASE_URL + 'userProfile'),
+        headers: mapheaders,
         body: {
           "user_id":"38"
         });

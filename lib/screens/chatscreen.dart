@@ -61,7 +61,7 @@ class _ChatScreenState extends State<ChatScreen> {
   bool sendimage = false;
   late VideoPlayerController _controller;
 //  final databaseRef = FirebaseDatabase.instance.reference(); //database reference object
-
+  bool isPressed = false;
   @override
   void initState() {
     currentInstance = "CHAT_SCREEN";
@@ -147,8 +147,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 children: [
                   IconButton(
                       onPressed: () {
-                        getAccessToken(widget.receiverId.toString(), "VOICE");
 
+                        if(!isPressed) {
+                          getAccessToken(widget.receiverId.toString(), "VOICE");
+                        }
                       },
                       icon: Icon(
                         Icons.phone,
@@ -156,8 +158,10 @@ class _ChatScreenState extends State<ChatScreen> {
                       )),
                   IconButton(
                       onPressed: () {
-                        getAccessToken(widget.receiverId.toString(), "VIDEO");
 
+                        if(!isPressed) {
+                          getAccessToken(widget.receiverId.toString(), "VIDEO");
+                        }
                       },
                       icon: Icon(
                         Icons.videocam_rounded,
@@ -1191,8 +1195,9 @@ class _ChatScreenState extends State<ChatScreen> {
       //  decoration: BoxDecoration(border: Border(top: BorderSide(color: Colors.grey, width: 0.5)), color: Colors.white),
     );
   }
+
 void updateSeccond(String msg) {
-  print("value " + msg.toString());
+  print("updateSeccond " + msg.toString());
   if (msg != null && msg != "") {
     var documentReference = FirebaseFirestore
         .instance
@@ -1241,7 +1246,7 @@ void updateSeccond(String msg) {
 */
 
   void updateChatHead(String s) async {
-    print("messageeee " + s + "");
+    print("updateChatHead " + s + "");
  print("agentName " + name + "");
  print("username " + widget.name + "");
  print("type " + widget.userType + "");
@@ -1684,6 +1689,7 @@ void updateSeccond(String msg) {
   }
 
   Future<dynamic> getAccessToken(String id, String type) async {
+    isPressed = true;
     SharedPreferences pref = await SharedPreferences.getInstance();
     var userid = pref.getString("id");
     var authToken = pref.getString("auth_token").toString();
@@ -1712,6 +1718,7 @@ void updateSeccond(String msg) {
 
     await request.then((http.Response response) {
       res = response;
+      isPressed = false;
 
       // msg = jsonRes["message"].toString();
       // getotp = jsonRes["otp"];

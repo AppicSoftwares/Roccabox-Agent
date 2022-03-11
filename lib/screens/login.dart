@@ -94,7 +94,7 @@ class _LoginState extends State<Login> {
                         child: TextFormField(
                           showCursor: true,
                           inputFormatters: [
-                            BlacklistingTextInputFormatter(RegExp(r"\s"))
+                            FilteringTextInputFormatter.deny(RegExp(r"\s"))
                           ],
                           onChanged: (val) {
                             email = val;
