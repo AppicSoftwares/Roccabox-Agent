@@ -53,7 +53,8 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
   @override
   Widget build(BuildContext context) {
     print(widget.totalUserList.length.toString());
-    return Scaffold(
+    return 
+    Scaffold(
       appBar: AppBar(
         leading: BackButton(
           onPressed: (){
@@ -65,7 +66,7 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Assigned Users',
+          'Assigned Enquires',
           style: TextStyle(
               fontSize: 16,
               color: Color(0xff000000),
@@ -146,6 +147,8 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
         },
       ),
     );
+  
+  
   }
 
 

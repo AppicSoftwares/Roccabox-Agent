@@ -70,7 +70,9 @@ class LanguageChange {
   var TOTALUSER = ['Total User', 'Usuario total'];
   var CHANGEPASWWORD = ['Change Password', 'Cambiar la contraseña'];
   var PROFILE = ['Profile', 'Perfil'];
-
+  var Assigned_Enquiries = ['Assigned Enquiries', 'Consultas asignadas'];
+  var Assigned_User = ['Assigned User', 'Usuario asignado'];
+ 
 //SEARCH
   var PRICE = ['Price Range', 'Rango de precios'];
   var LOWEST = ['Lowest to Highest', 'de menor a mayor'];

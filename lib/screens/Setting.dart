@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:roccabox_agent/agora/dialscreen/dialScreen.dart';
 import 'package:roccabox_agent/agora/videoCall/videoCall.dart';
 import 'package:roccabox_agent/main.dart';
+import 'package:roccabox_agent/screens/assigned_user.dart';
 import 'package:roccabox_agent/screens/change_Password.dart';
 import 'package:roccabox_agent/screens/edit_profile.dart';
 import 'package:roccabox_agent/screens/login.dart';
@@ -138,8 +139,8 @@ class _ProfileState extends State<Profile> {
                 //     MaterialPageRoute(builder: (context) => PropertyList())),
                 //tileColor: Color(0xffF3F3F3),
                 title: Text(
-                  languageChange.TOTALUSER[langCount],
-                  // total user
+                  languageChange.Assigned_Enquiries[langCount],
+                  // total user //assigned enquires, asigned user
                   style: TextStyle(
                       fontSize: 16,
                       color: Color(0xff000000),
@@ -162,6 +163,45 @@ class _ProfileState extends State<Profile> {
                                     totalUserList: totalUserList)));
                   }
                   }),
+           
+           ListTile(
+                // onTap: () => Navigator.push(context,
+                //     MaterialPageRoute(builder: (context) => PropertyList())),
+                //tileColor: Color(0xffF3F3F3),
+                title: Text(
+                  languageChange.Assigned_User[langCount],
+                 //asigned user
+                  style: TextStyle(
+                      fontSize: 16,
+                      color: Color(0xff000000),
+                      fontWeight: FontWeight.w500),
+                ),
+                trailing: Text(
+                  count,
+                  style: TextStyle(
+                      fontSize: 16,
+                      color: Color(0xff000000),
+                      fontWeight: FontWeight.w500),
+                ),
+                onTap: () {
+                  // if(totalUserList!=null && totalUserList.length>0) {
+                  //   Navigator.push(
+                  //       context,
+                  //       MaterialPageRoute(
+                  //           builder: (context) =>
+                  //               AssignedUsersScreen(
+                  //                   totalUserList: totalUserList)));
+                  // }
+
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                             AssignedUser()));
+                  }),
+           
+           
+           
             ListTile(
               tileColor: Color(0xffF3F3F3),
               title: Text(

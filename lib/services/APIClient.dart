@@ -15,4 +15,5 @@ class RestDatasource {
   static final SENDTOKEN_URL = BASE_URL + "updateToken";
   static final TWILIOTOKEN = BASE_URL + "twilioToken";
   static final AGORATOKEN = BASE_URL + "agora-token";
+  static final ASSIGNEDUSER_URL = BASE_URL + "get-allassigned-users";
 }
