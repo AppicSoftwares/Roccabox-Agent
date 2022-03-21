@@ -237,7 +237,7 @@ class _DialScreenState extends State<DialScreen> {
                           _stopFile();
                           _engine.leaveChannel();
                           updateChatHead();
-                          Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context)=> HomeNav()));
+                          Navigator.pushAndRemoveUntil(context, new MaterialPageRoute(builder: (context)=> HomeNav()), (r)=> false);
 
                           },
                         color: kRedColor,

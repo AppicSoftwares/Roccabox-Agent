@@ -376,7 +376,7 @@ class _BodyState extends State<Body> {
                                   pickCall = false;
 
                                   updateChatHead(args, "end");
-                                  Navigator.of(context).pushReplacement(new MaterialPageRoute(builder: (context)=> HomeNav()));
+                                  Navigator.of(context).pushAndRemoveUntil(new MaterialPageRoute(builder: (context)=> HomeNav()), (r)=> false);
 
                                 });
                               },

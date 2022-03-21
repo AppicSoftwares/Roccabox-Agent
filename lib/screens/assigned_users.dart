@@ -275,7 +275,8 @@ class _TotalUserScreenState extends State<AssignedUsersScreen> {
       }
 
     } else {
-
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Cannot connect to server")));
     }
   }
 

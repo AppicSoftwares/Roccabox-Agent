@@ -32,11 +32,6 @@ class _ChatState extends State<Chat> {
   @override
   void initState() {
     getData();
-    WidgetsBinding.instance!.addObserver(
-        LifecycleEventHandler(resumeCallBack: () async {
-          print("Invoke");
-        }
-        ));
 
     super.initState();
   }

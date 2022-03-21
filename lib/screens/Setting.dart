@@ -35,6 +35,7 @@ class _ProfileState extends State<Profile> {
   List data = [];
   List<TotalUserList> totalUserList = [];
   var count = "";
+  var countTotalUsers = "";
   var email;
   var name;
   var image;
@@ -44,6 +45,7 @@ class _ProfileState extends State<Profile> {
   var id;
   bool isLoading = false;
   UserList user = UserList();
+  List<UserModel> userModelList = [];
   @override
   void initState() {
     getChatData();
@@ -57,6 +59,7 @@ class _ProfileState extends State<Profile> {
      }
      );
      getUserList();
+     featuredBusinessApi();
     isLoading = true;
   }
 
@@ -66,6 +69,7 @@ class _ProfileState extends State<Profile> {
   
   Widget build(BuildContext context) {
     print("jjj" + email.toString() + "");
+    print("imagsgh" + image.toString() + "");
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xffFFFFFF),
@@ -86,7 +90,7 @@ class _ProfileState extends State<Profile> {
             ListTile(
               contentPadding:
                   EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              leading: image == null || image.toString()=="null"
+              leading: image == null || image.toString()=="null" || image.toString() == ""
                                     ? Image.asset(
                                         'assets/avatar.png',
                                       )
@@ -163,7 +167,9 @@ class _ProfileState extends State<Profile> {
                                     totalUserList: totalUserList)));
                   }
                   }),
-           
+            Divider(
+              color: Color(0xff707070),
+            ),
            ListTile(
                 // onTap: () => Navigator.push(context,
                 //     MaterialPageRoute(builder: (context) => PropertyList())),
@@ -177,27 +183,22 @@ class _ProfileState extends State<Profile> {
                       fontWeight: FontWeight.w500),
                 ),
                 trailing: Text(
-                  count,
+                  countTotalUsers,
                   style: TextStyle(
                       fontSize: 16,
                       color: Color(0xff000000),
                       fontWeight: FontWeight.w500),
                 ),
                 onTap: () {
-                  // if(totalUserList!=null && totalUserList.length>0) {
-                  //   Navigator.push(
-                  //       context,
-                  //       MaterialPageRoute(
-                  //           builder: (context) =>
-                  //               AssignedUsersScreen(
-                  //                   totalUserList: totalUserList)));
-                  // }
-
+                  if(userModelList!=null && userModelList.length>0) {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                             AssignedUser()));
+                                AssignedUser(
+                                    userModelList: userModelList)));
+                  }
+
                   }),
            
            
@@ -399,6 +400,80 @@ class _ProfileState extends State<Profile> {
       ),
     );
   }
+
+  Future<dynamic> featuredBusinessApi() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var id = prefs.getString("id");
+
+
+    var request = http.post(
+        Uri.parse(
+          RestDatasource.ASSIGNEDUSER_URL,
+        ),
+        body: {
+          "agent_id": id,
+        });
+    String msg = "";
+    var jsonArray;
+    var jsonRes;
+    var res;
+
+    await request.then((http.Response response) {
+      res = response;
+      final JsonDecoder _decoder = new JsonDecoder();
+      jsonRes = _decoder.convert(response.body.toString());
+      print("Response: " + response.body.toString() + "_");
+      print("ResponseJSON: " + jsonRes.toString() + "_");
+      msg = jsonRes["message"].toString();
+      jsonArray = jsonRes['data'];
+    });
+
+    if (res.statusCode == 200) {
+      print(jsonRes["status"]);
+      //nearByRestaurantList.clear();
+      if (jsonRes["status"].toString() == "true") {
+        for (var i = 0; i < jsonArray.length; i++) {
+          UserModel modelAgentSearch = new UserModel();
+          modelAgentSearch.id = jsonArray[i]["id"].toString();
+          modelAgentSearch.role_id = jsonArray[i]["role_id"].toString();
+          modelAgentSearch.name = jsonArray[i]["name"].toString();
+          modelAgentSearch.email = jsonArray[i]["email"].toString();
+          modelAgentSearch.country_code = jsonArray[i]["country_code"].toString();
+          modelAgentSearch.phone = jsonArray[i]["phone"].toString();
+          modelAgentSearch.image = jsonArray[i]["image"].toString();
+          modelAgentSearch.email_verified_at = jsonArray[i]["email_verified_at"].toString();
+          modelAgentSearch.status = jsonArray[i]["status"].toString();
+          modelAgentSearch.created_at = jsonArray[i]["created_at"].toString();
+
+          userModelList.add(modelAgentSearch);
+        }
+        countTotalUsers = userModelList.length.toString();
+        setState(() {
+
+        });
+        //Navigator.pop(context);
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //     SnackBar(content: Text(jsonRes["message"].toString())));
+        // sliderBannerApi();
+        //Navigator.pop(context);
+
+        // Navigator.push(context, MaterialPageRoute(builder: (context) => Banners()));
+
+      } else {
+        setState(() {
+          countTotalUsers = "";
+        });
+      }
+    } else {
+      setState(() {
+        countTotalUsers = "";
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Please try later")));
+      });
+    }
+  }
+
+
   Future getChatData() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     id = pref.getString("id").toString();
@@ -431,6 +506,7 @@ class _ProfileState extends State<Profile> {
       throw Exception('Failed to load album');
     }
   }
+
   void updateChatHead(String userid, String name, String image, String type, String fcmToken,String idd, String status, String agoraToken, String channel, String time) async {
 
     var documentReference = FirebaseFirestore.instance
@@ -579,6 +655,7 @@ class _ProfileState extends State<Profile> {
     image = pref.getString("image").toString();
 
     print("yyy" + email.toString() + "");
+    print("imgsdg" + image.toString() + "");
     setState(() {
       
     });

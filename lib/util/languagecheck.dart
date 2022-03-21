@@ -71,7 +71,7 @@ class LanguageChange {
   var CHANGEPASWWORD = ['Change Password', 'Cambiar la contraseña'];
   var PROFILE = ['Profile', 'Perfil'];
   var Assigned_Enquiries = ['Assigned Enquiries', 'Consultas asignadas'];
-  var Assigned_User = ['Assigned User', 'Usuario asignado'];
+  var Assigned_User = ['Assigned Users', 'Usuario asignado'];
  
 //SEARCH
   var PRICE = ['Price Range', 'Rango de precios'];

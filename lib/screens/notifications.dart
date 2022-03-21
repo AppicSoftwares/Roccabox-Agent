@@ -144,7 +144,7 @@ class _NotificationsState extends State<Notifications> {
                       }
                     }*/
                   }else if(screenList.elementAt(index)=="NOTIFICATION_SCREEN"){
-                    Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context)=> AssignedUsersScreen(totalUserList: totalUserList,)));
+                    Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context)=> HomeNav.one(index: 3)));
 
                   }
                 }
@@ -264,7 +264,6 @@ class _NotificationsState extends State<Notifications> {
             }
           }
         }
-        print("ppr " + totalUserList.length.toString() + "^");
 
         setState(() {
         });

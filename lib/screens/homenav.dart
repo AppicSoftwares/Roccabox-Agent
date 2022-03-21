@@ -18,6 +18,9 @@ import 'login.dart';
 import 'notifications.dart';
 
 class HomeNav extends StatefulWidget {
+  var index = 0;
+  HomeNav({Key? key}):super(key:key);
+  HomeNav.one({Key? key, required this.index}):super(key:key);
 
   
   @override
@@ -34,7 +37,7 @@ FirebaseMessaging? auth;
 GlobalKey globalKey = new GlobalKey(debugLabel: 'btm_app_bar');
     @override
   void initState() {
-   
+   _index = widget.index;
     super.initState();
     auth = FirebaseMessaging.instance;
     auth?.getToken().then((value){
