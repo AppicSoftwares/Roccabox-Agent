@@ -7,8 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/src/provider.dart';
 import 'package:roccabox_agent/screens/assigned_users.dart';
+import 'package:roccabox_agent/screens/documentScreen.dart';
 
 import 'package:roccabox_agent/screens/homenav.dart';
+import 'package:roccabox_agent/screens/imageScreen2.dart';
 import 'package:roccabox_agent/services/APIClient.dart';
 import 'package:roccabox_agent/services/modelProvider.dart';
 import 'package:roccabox_agent/util/customDialoge.dart';
@@ -52,6 +54,8 @@ class _NotificationsState extends State<Notifications> {
   List<String> imageList = [];
   List<String> screenList = [];
   List<String> idList = [];
+  List<String> urlList = [];
+  List<String> urlTypeList = [];
   var isdata = false;
 
 
@@ -146,6 +150,18 @@ class _NotificationsState extends State<Notifications> {
                   }else if(screenList.elementAt(index)=="NOTIFICATION_SCREEN"){
                     Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context)=> HomeNav.one(index: 3)));
 
+                  }else if(screenList.elementAt(index)=="notification"){
+                    print("urlType "+urlTypeList.elementAt(index).toString()+"^^");
+                    if(urlTypeList.elementAt(index)!="" && urlTypeList.elementAt(index)!=null){
+                      if(urlTypeList.elementAt(index).toString().toLowerCase()=="jpg" || urlTypeList.elementAt(index).toString().toLowerCase()=="png"){
+                        Navigator.push(context, new MaterialPageRoute(builder: (builder)=> ImageScreeen(image: urlList.elementAt(index).toString(),)));
+                      }else if(urlTypeList.elementAt(index).toString().toLowerCase()=="pdf"){
+                        Navigator.push(context, new MaterialPageRoute(builder: (builder)=> DocumentScreen(path: urlList.elementAt(index).toString(),)));
+
+                      }else{
+
+                      }
+                    }
                   }
                 }
               }
@@ -170,6 +186,11 @@ class _NotificationsState extends State<Notifications> {
               bodyList[index],
               style: TextStyle(fontSize: 12, color: Color(0xff818181)),
             ),
+             trailing: urlTypeList.elementAt(index).toString()!=""?urlTypeList.elementAt(index).toString().toLowerCase()=="jpg" || urlTypeList.elementAt(index).toString().toLowerCase()=="png"?
+             CircleAvatar(backgroundImage: NetworkImage(
+                 urlList.elementAt(index).toString()), radius: 30,):
+            Image.asset("assets/doc_icon.png", width: 50, height: 50,):Text("")
+            ,
           ): Center(child:Image.asset('assets/no_notification_yet.png'));
         },
       ): Center(child:Image.asset('assets/no_notification_yet.webp')),
@@ -193,6 +214,9 @@ class _NotificationsState extends State<Notifications> {
    // imageList = preferences.getStringList("imageList")!;
     screenList = preferences.getStringList("screenList")!;
    // idList = preferences.getStringList("idList")!;
+    urlList = preferences.getStringList("urlList")!;
+    urlTypeList = preferences.getStringList("urlTypeList")!;
+
     isread.forEach((element) {
       isRead.add("true");
     });
@@ -208,6 +232,8 @@ class _NotificationsState extends State<Notifications> {
      // imageList = imageList.reversed.toList();
      // idList = idList.reversed.toList();
       screenList = screenList.reversed.toList();
+      urlList = urlList.reversed.toList();
+      urlTypeList = urlTypeList.reversed.toList();
 
     });
   }

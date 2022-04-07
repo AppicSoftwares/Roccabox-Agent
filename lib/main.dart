@@ -980,63 +980,90 @@ class _MyAppState extends State<MyApp> {
     List<String>? titleList = preferences.getStringList('titleList');
     List<String>? bodyList = preferences.getStringList('bodyList');
     List<String>? isReadList = preferences.getStringList('isRead');
-    //List<String>? idList = preferences.getStringList('idList');
+    List<String>? idList = preferences.getStringList('idList');
     List<String>? screenList = preferences.getStringList('screenList');
-    //List<String>? imageList = preferences.getStringList('imageList');
+    List<String>? imageList = preferences.getStringList('imageList');
+    List<String>? urlList = preferences.getStringList('urlList');
+    List<String>? urlType = preferences.getStringList('urlTypeList');
+
 
     // List<String> timeList = preferences.getStringList('timeList');
-    if(titleList!=null && bodyList!=null && isReadList!=null && screenList!=null /*&& idList!=null && imageList!=null*/
+    if(titleList!=null && bodyList!=null && isReadList!=null && screenList!=null && idList!=null && imageList!=null && urlList!=null && urlType!=null
     ){
       titleList.add(map["title"].toString());
       bodyList.add(map["body"].toString());
       screenList.add(map["screen"].toString());
+      urlList.add(map["url"].toString());
+      urlType.add(map["url_type"].toString());
+
       isReadList.add("false");
       preferences.setStringList("titleList", titleList);
       preferences.setStringList("bodyList", bodyList);
       preferences.setStringList("isRead", isReadList);
-     // preferences.setStringList("idList", idList);
+      preferences.setStringList("idList", idList);
       preferences.setStringList("screenList", screenList);
-     // preferences.setStringList("imageList", imageList);
+      preferences.setStringList("imageList", imageList);
+      preferences.setStringList("urlList", urlList);
+      preferences.setStringList("urlTypeList", urlType);
       //  preferences.setStringList("timeList", timeList);
       preferences.commit();
     }else{
       List<String> titleListNew = [];
       List<String> bodyListNew = [];
       List<String> isReadListNew = [];
-     // List<String> idList = [];
+      List<String> idList = [];
       List<String> screenList = [];
-     // List<String> imageList = [];
+      List<String> imageList = [];
+      List<String> urlList = [];
+      List<String> urlTypeList = [];
 
       titleListNew.add(map["title"].toString());
       bodyListNew.add(map["body"].toString());
+      screenList.add(map["screen"].toString());
 
-/*      if(map.containsKey("id")) {
+      if(map.containsKey("id")) {
         idList.add(map["id"].toString());
       }else{
         idList.add("");
 
-      }*/
+      }
       if(map.containsKey("screen")) {
         screenList.add(map["screen"].toString());
       }else{
         screenList.add("");
 
       }
-/*
+
       if(map.containsKey("image")) {
         imageList.add(map["image"].toString());
       }else{
         imageList.add("");
 
-      }*/
+      }
+
+      if(map.containsKey("url")) {
+        urlList.add(map["url"].toString());
+      }else{
+        urlList.add("");
+
+      }
+
+      if(map.containsKey("url_type")) {
+        urlTypeList.add(map["url_type"].toString());
+      }else{
+        urlTypeList.add("");
+
+      }
       isReadListNew.add("false");
 
       preferences.setStringList("titleList", titleListNew);
       preferences.setStringList("bodyList", bodyListNew);
       preferences.setStringList("isRead", isReadListNew);
-   //   preferences.setStringList("imageList", imageList);
-  //    preferences.setStringList("idList", idList);
+      preferences.setStringList("imageList", imageList);
+      preferences.setStringList("idList", idList);
       preferences.setStringList("screenList", screenList);
+      preferences.setStringList("urlList", screenList);
+      preferences.setStringList("urlTypeList", screenList);
       preferences.commit();
     }
 
