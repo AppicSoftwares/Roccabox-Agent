@@ -71,7 +71,7 @@ class _NotificationsState extends State<Notifications> {
         leading: BackButton(
           color: Color(0xff000000),
           onPressed: (){
-            Navigator.pushReplacement(context, new MaterialPageRoute(builder: (con)=> HomeNav()));
+             Navigator.pushAndRemoveUntil(context, new MaterialPageRoute(builder: (builder)=> HomeNav()), (route) => false);
           },
         ),
         backgroundColor: Color(0xffFFFFFF),
@@ -96,9 +96,19 @@ class _NotificationsState extends State<Notifications> {
                 pref.remove("titleList");
                 pref.remove("bodyList");
                 pref.remove("isRead");
+                pref.remove("urlList");
+                pref.remove("urlTypeList");
+                pref.remove("idList");
+                pref.remove("screenList");
+                pref.remove("imageList");
                 //pref.getStringList("timeList" ).clear();
                 titleList.clear();
                 bodyList.clear();
+                urlList.clear();
+                urlTypeList.clear();
+                idList.clear();
+                screenList.clear();
+                imageList.clear();
                 notificationCount = 0;
                 context.read<Counter>().getNotify();
                 isdata = false;
@@ -124,76 +134,82 @@ class _NotificationsState extends State<Notifications> {
           ),
         ],
       ),
-      body: isdata?ListView.separated(
-        itemCount: titleList.length,
-        separatorBuilder: (BuildContext context, int index) {
-          return Divider(
-            color: Color(0xff707070),
-          );
+      body: WillPopScope(
+        onWillPop: ()async{
+          await Navigator.pushAndRemoveUntil(context, new MaterialPageRoute(builder: (builder)=> HomeNav()), (route) => false);
+          return true;
         },
-        itemBuilder: (BuildContext context, int index) {
+        child: isdata?ListView.separated(
+          itemCount: titleList.length,
+          separatorBuilder: (BuildContext context, int index) {
+            return Divider(
+              color: Color(0xff707070),
+            );
+          },
+          itemBuilder: (BuildContext context, int index) {
 
-          print(screenList.length.toString()+"*");
-          return isdata?ListTile(
-            isThreeLine: true,
-            onTap: (){
-              if(screenList!=null && screenList.isNotEmpty){
-                if(screenList.elementAt(index)!=""){
-                  if(screenList.elementAt(index)=="CHAT_SCREEN"){
-                    Navigator.pushAndRemoveUntil(context, new MaterialPageRoute(builder: (context)=> HomeNav()), (r)=> false);
+            print(screenList.length.toString()+"*");
+            return isdata?ListTile(
+              isThreeLine: true,
+              onTap: (){
+                if(screenList!=null && screenList.isNotEmpty){
+                  if(screenList.elementAt(index)!=""){
+                    if(screenList.elementAt(index)=="CHAT_SCREEN"){
+                      Navigator.pushAndRemoveUntil(context, new MaterialPageRoute(builder: (context)=> HomeNav()), (r)=> false);
 
-                    /*   if(idList!=null) {
-                      if (idList.elementAt(index) != "") {
-                        Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context)=> Chat()));
-                      }
-                    }*/
-                  }else if(screenList.elementAt(index)=="NOTIFICATION_SCREEN"){
-                    Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context)=> HomeNav.one(index: 3)));
+                      /*   if(idList!=null) {
+                        if (idList.elementAt(index) != "") {
+                          Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context)=> Chat()));
+                        }
+                      }*/
+                    }else if(screenList.elementAt(index)=="NOTIFICATION_SCREEN"){
+                      Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context)=> HomeNav.one(index: 3)));
 
-                  }else if(screenList.elementAt(index)=="notification"){
-                    print("urlType "+urlTypeList.elementAt(index).toString()+"^^");
-                    if(urlTypeList.elementAt(index)!="" && urlTypeList.elementAt(index)!=null){
-                      if(urlTypeList.elementAt(index).toString().toLowerCase()=="jpg" || urlTypeList.elementAt(index).toString().toLowerCase()=="png"){
-                        Navigator.push(context, new MaterialPageRoute(builder: (builder)=> ImageScreeen(image: urlList.elementAt(index).toString(),)));
-                      }else if(urlTypeList.elementAt(index).toString().toLowerCase()=="pdf"){
-                        Navigator.push(context, new MaterialPageRoute(builder: (builder)=> DocumentScreen(path: urlList.elementAt(index).toString(),)));
+                    }else if(screenList.elementAt(index)=="notification"){
+                      print("urlType "+urlTypeList.elementAt(index).toString()+"^^");
+                      if(urlTypeList.elementAt(index)!="" && urlTypeList.elementAt(index)!=null){
+                        if(urlTypeList.elementAt(index).toString().toLowerCase()=="jpg" || urlTypeList.elementAt(index).toString().toLowerCase()=="png"){
+                          Navigator.push(context, new MaterialPageRoute(builder: (builder)=> ImageScreeen(image: urlList.elementAt(index).toString(),)));
+                        }else if(urlTypeList.elementAt(index).toString().toLowerCase()=="pdf"){
+                          Navigator.push(context, new MaterialPageRoute(builder: (builder)=> DocumentScreen(path: urlList.elementAt(index).toString(),)));
 
-                      }else{
+                        }else{
 
+                        }
                       }
                     }
                   }
                 }
-              }
-            },
-            leading: CircleAvatar(
-              backgroundColor:
-              Colors.primaries[Random().nextInt(Colors.primaries.length)],
-              // backgroundImage: AssetImage('assets/img1.png'),
-              child: Text(
-                titleList.elementAt(index).toString().substring(0, 1),
-                style: TextStyle(fontSize: 22, color: Colors.black),
+              },
+              leading: CircleAvatar(
+                backgroundColor:
+                Colors.primaries[Random().nextInt(Colors.primaries.length)],
+                // backgroundImage: AssetImage('assets/img1.png'),
+                child: Text(
+                  titleList.elementAt(index).toString().substring(0, 1),
+                  style: TextStyle(fontSize: 22, color: Colors.black),
+                ),
               ),
-            ),
-            title: Text(
-              titleList.elementAt(index),
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xff000000)),
-            ),
-            subtitle: Text(
-              bodyList[index],
-              style: TextStyle(fontSize: 12, color: Color(0xff818181)),
-            ),
-             trailing: urlTypeList.elementAt(index).toString()!=""?urlTypeList.elementAt(index).toString().toLowerCase()=="jpg" || urlTypeList.elementAt(index).toString().toLowerCase()=="png"?
-             CircleAvatar(backgroundImage: NetworkImage(
-                 urlList.elementAt(index).toString()), radius: 30,):
-            Image.asset("assets/doc_icon.png", width: 50, height: 50,):Text("")
-            ,
-          ): Center(child:Image.asset('assets/no_notification_yet.png'));
-        },
-      ): Center(child:Image.asset('assets/no_notification_yet.webp')),
+              title: Text(
+                titleList.elementAt(index),
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xff000000)),
+              ),
+              subtitle: Text(
+                bodyList[index],
+                style: TextStyle(fontSize: 12, color: Color(0xff818181)),
+              ),
+              trailing: urlList.elementAt(index).toString()!=""?urlList.elementAt(index).toString().toLowerCase().endsWith("jpg") || urlList.elementAt(index).toString().toLowerCase().endsWith("png") || urlList.elementAt(index).toString().toLowerCase().endsWith("jpeg")?
+              CircleAvatar(backgroundImage: NetworkImage(
+                  urlList.elementAt(index).toString()), radius: 30,):
+              Image.asset("assets/doc_icon.png", width: 50, height: 50,):Text("")
+              ,
+            ): Center(child:Image.asset('assets/no_notification_yet.png'));
+          },
+        ): Center(child:Image.asset('assets/no_notification_yet.webp')),
+      ),
     );
   }
 

@@ -346,12 +346,17 @@ Future<void> backgroundMessagehandler(RemoteMessage message) async {
     List<String>? idList = preferences.getStringList('idList');
     List<String>? screenList = preferences.getStringList('screenList');
     List<String>? imageList = preferences.getStringList('imageList');
+    List<String>? urlList = preferences.getStringList('urlList');
+    List<String>? urlType = preferences.getStringList('urlTypeList');
 
     // List<String> timeList = preferences.getStringList('timeList');
-    if(titleList!=null && bodyList!=null && isReadList!=null && screenList!=null && idList!=null && imageList!=null
+    if(titleList!=null && bodyList!=null && isReadList!=null && screenList!=null && idList!=null && imageList!=null && urlList!=null && urlType!=null
     ){
       titleList.add(map["title"].toString());
       bodyList.add(map["body"].toString());
+      urlList.add(map["url"].toString());
+      urlType.add(map["url_type"].toString());
+
       isReadList.add("false");
       preferences.setStringList("titleList", titleList);
       preferences.setStringList("bodyList", bodyList);
@@ -359,6 +364,9 @@ Future<void> backgroundMessagehandler(RemoteMessage message) async {
       preferences.setStringList("idList", idList);
       preferences.setStringList("screenList", screenList);
       preferences.setStringList("imageList", imageList);
+      preferences.setStringList("urlList", urlList);
+      preferences.setStringList("urlTypeList", urlType);
+
       //  preferences.setStringList("timeList", timeList);
       preferences.commit();
     }else{
@@ -368,6 +376,8 @@ Future<void> backgroundMessagehandler(RemoteMessage message) async {
       List<String> idList = [];
       List<String> screenList = [];
       List<String> imageList = [];
+      List<String> urlList = [];
+      List<String> urlTypeList = [];
 
       titleListNew.add(map["title"].toString());
       bodyListNew.add(map["body"].toString());
@@ -390,6 +400,22 @@ Future<void> backgroundMessagehandler(RemoteMessage message) async {
         imageList.add("");
 
       }
+
+      if(map.containsKey("url")) {
+        urlList.add(map["url"].toString());
+      }else{
+        urlList.add("");
+
+      }
+
+      if(map.containsKey("url_type")) {
+        urlTypeList.add(map["url_type"].toString());
+      }else{
+        urlTypeList.add("");
+
+      }
+
+
       isReadListNew.add("false");
 
       preferences.setStringList("titleList", titleListNew);
@@ -398,6 +424,9 @@ Future<void> backgroundMessagehandler(RemoteMessage message) async {
       preferences.setStringList("imageList", imageList);
       preferences.setStringList("idList", idList);
       preferences.setStringList("screenList", screenList);
+      preferences.setStringList("urlList", screenList);
+      preferences.setStringList("urlTypeList", screenList);
+
       preferences.commit();
 
     }
